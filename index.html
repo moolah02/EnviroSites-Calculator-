@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zimbabwe Cities Distance Calculator</title>
+    <title>EnviroSites Distance Calculator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
@@ -15,88 +15,78 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f4f4;
             min-height: 100vh;
             color: #333;
         }
 
         .container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            margin-top: 20px;
-            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 15px;
+            background: #007bff;
+            border-radius: 5px;
             color: white;
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.2em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-            font-size: 1.2em;
+            font-size: 1.1em;
             opacity: 0.9;
         }
 
         .tabs {
             display: flex;
             margin-bottom: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 4px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: #e9ecef;
+            border-radius: 5px;
+            padding: 5px;
         }
 
         .tab {
             flex: 1;
-            padding: 15px 20px;
+            padding: 15px;
             text-align: center;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 5px;
             font-weight: 600;
             font-size: 1.1em;
+            transition: background 0.2s;
         }
 
         .tab:hover {
-            background: rgba(76, 175, 80, 0.1);
-            transform: translateY(-2px);
+            background: #d5d5d5;
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
+            background: #007bff;
             color: white;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
         }
 
         .map-container {
             position: relative;
             height: 500px;
-            border-radius: 15px;
+            border-radius: 5px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
         }
 
         #map {
             width: 100%;
             height: 100%;
-            border-radius: 15px;
         }
 
         .controls {
@@ -106,9 +96,9 @@
             align-items: end;
             margin-bottom: 20px;
             padding: 20px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .select-group {
@@ -117,89 +107,60 @@
         }
 
         .select-group label {
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: 600;
-            color: #495057;
+            color: #333;
         }
 
         select {
             padding: 12px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 1em;
             background: white;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         select:focus {
             outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+            border-color: #007bff;
         }
 
         .calculate-btn {
             padding: 12px 25px;
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            background: #007bff;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
-        }
-
-        .calculate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
         }
 
         .calculate-btn:disabled {
             background: #6c757d;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .result {
             padding: 20px;
-            background: linear-gradient(135deg, #17a2b8, #138496);
+            background: #28a745;
             color: white;
-            border-radius: 15px;
+            border-radius: 5px;
             text-align: center;
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: 600;
             display: none;
-            box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
-        }
-
-        .result.show {
-            display: block;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .instruction {
-            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            background: #f8f9fa;
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 5px;
             margin-bottom: 20px;
             text-align: center;
             font-weight: 600;
-            color: #2d3436;
-            box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
+            color: #333;
         }
 
         @media (max-width: 768px) {
@@ -214,7 +175,7 @@
             }
             
             .header h1 {
-                font-size: 2em;
+                font-size: 1.8em;
             }
         }
     </style>
@@ -222,21 +183,17 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-map-marked-alt"></i> Zimbabwe Distance Calculator</h1>
-            <p>Calculate distances between locations in Harare and Bulawayo</p>
+            <h1><i class="fas fa-map-marked-alt"></i> EnviroSites Distance Calculator</h1>
+            <p>Calculate distances between 2 different sites</p>
         </div>
 
         <div class="instruction">
-            <i class="fas fa-info-circle"></i> Select a city tab, choose two different locations, then calculate the distance between them
+            <i class="fas fa-info-circle"></i> Select a city tab, choose two different Sites, then calculate the distance between them.
         </div>
 
         <div class="tabs">
-            <div class="tab active" data-city="harare">
-                <i class="fas fa-city"></i> Harare
-            </div>
-            <div class="tab" data-city="bulawayo">
-                <i class="fas fa-building"></i> Bulawayo
-            </div>
+            <div class="tab active" data-city="harare">Harare</div>
+            <div class="tab" data-city="bulawayo">Bulawayo</div>
         </div>
 
         <div class="map-container">
@@ -268,94 +225,8 @@
     <script>
         // Location data
         const locations = {
-            harare: [
-                { name: "TAFARA", lat: -17.832416666666667, lng: 31.212944444444442 },
-                { name: "DERBYSHIRE", lat: -17.93963888888889, lng: 31.010166666666667 },
-                { name: "RUWA GEORGE", lat: -17.890333333333334, lng: 31.242805555555556 },
-                { name: "LUSAKA", lat: -17.900333333333332, lng: 30.988083333333336 },
-                { name: "MAVAMBO", lat: -17.897027777777776, lng: 31.238583333333334 },
-                { name: "GLEN VIEW", lat: -17.906, lng: 30.949055555555557 },
-                { name: "OK MABVUKU", lat: -17.837722222222222, lng: 31.19825 },
-                { name: "OK BUDIRIRO", lat: -17.882527777777778, lng: 30.933333333333334 },
-                { name: "ZIMRE PARK", lat: -17.87388888888889, lng: 31.2185 },
-                { name: "CURRENT", lat: -17.882055555555556, lng: 30.919611111111113 },
-                { name: "MARONDERA", lat: -18.189444444444444, lng: 31.551944444444445 },
-                { name: "EASTLEA", lat: -17.81975, lng: 31.075722222222222 },
-                { name: "UNIT L", lat: -18.031222222222222, lng: 31.076694444444446 },
-                { name: "KAMFINSA", lat: -17.805444444444444, lng: 31.126472222222223 },
-                { name: "C JUNCTION", lat: -18.025555555555556, lng: 31.08675 },
-                { name: "CHISIPITE", lat: -17.783722222222224, lng: 31.11802777777778 },
-                { name: "ST MARYS", lat: -17.995972222222225, lng: 31.045166666666667 },
-                { name: "NEWLANDS", lat: -17.80997222222222, lng: 31.075666666666667 },
-                { name: "GROOMBRIDGE", lat: -17.776138888888887, lng: 31.06447222222222 },
-                { name: "ZENGEZA 2", lat: -17.99938888888889, lng: 31.05913888888889 },
-                { name: "ASHBRITTLE", lat: -17.77063888888889, lng: 31.03466666666667 },
-                { name: "ZENGEZA 3 - TERMINUS", lat: -18.010527777777778, lng: 31.053194444444443 },
-                { name: "HELENSVALE", lat: -17.737361111111113, lng: 31.103555555555555 },
-                { name: "ZVIDO SHOPS UNIT N", lat: -18.027083333333334, lng: 31.09797222222222 },
-                { name: "VILLAGE", lat: -17.761305555555555, lng: 31.085833333333333 },
-                { name: "UNIT O SHOPS", lat: -18.024638888888887, lng: 31.114555555555558 },
-                { name: "CHADCOMBE", lat: -17.86002777777778, lng: 31.097027777777775 },
-                { name: "SOUTHLEA PARK", lat: -17.964333333333332, lng: 30.98766666666667 },
-                { name: "QUEENSDALE", lat: -17.855861111111114, lng: 31.087277777777775 },
-                { name: "MUFAKOSE", lat: -17.85725, lng: 31.04125 },
-                { name: "APEX MARONDERA", lat: -18.19022222222222, lng: 31.548194444444444 },
-                { name: "KENTUCKY", lat: -17.881527777777777, lng: 31.07011111111111 },
-                { name: "GREENCROFT", lat: -17.77611111111111, lng: 31.010638888888888 },
-                { name: "AVONDALE", lat: -17.802027777777777, lng: 31.037333333333336 },
-                { name: "KUWADZANA 2", lat: -17.82438888888889, lng: 30.937055555555556 },
-                { name: "MABELREIGN", lat: -17.79013888888889, lng: 30.998527777777777 },
-                { name: "DZ E EXTENSION", lat: -17.78477777777778, lng: 30.91433333333333 },
-                { name: "AVONLEA", lat: -17.77461111111111, lng: 31.01161111111111 },
-                { name: "TYNWALD", lat: -17.792527777777778, lng: 30.95536111111111 },
-                { name: "WESTGATE", lat: -17.763083333333334, lng: 30.979444444444443 },
-                { name: "ASPINDALE", lat: -17.867722222222223, lng: 30.9525 },
-                { name: "DIVARIS", lat: -17.881722222222223, lng: 31.016416666666668 },
-                { name: "MARIMBA", lat: -17.830527777777778, lng: 31.008777777777777 },
-                { name: "MONTAGU", lat: -17.819416666666665, lng: 31.039472222222223 },
-                { name: "HOUGHTON PARK", lat: -17.881722222222223, lng: 31.016416666666668 },
-                { name: "RUWA PICK N PAY", lat: -17.830527777777778, lng: 31.008777777777777 },
-                { name: "GRANARY PHASE4", lat: -17.842305555555555, lng: 30.889916666666664 },
-                { name: "REDAN MBARE", lat: -17.863750000000003, lng: 31.03827777777778 },
-                { name: "GRANARY PHASE 1", lat: -17.86013888888889, lng: 30.895805555555555 },
-                { name: "MBARE OK", lat: -17.85725, lng: 31.04125 },
-                { name: "GRANARY PHASE2", lat: -17.849138888888888, lng: 30.887027777777778 },
-                { name: "MBARE STODAD", lat: -17.867583333333332, lng: 31.03175 },
-                { name: "GRANARY PHASE 3", lat: -17.848888888888887, lng: 30.872194444444446 },
-                { name: "MBARE RUNYARARO", lat: -17.830527777777778, lng: 31.008777777777777 },
-                { name: "CROWBOROUGH 2", lat: -17.87366666666667, lng: 31.213416666666667 },
-                { name: "CROWBOROUGH 3", lat: -17.84658333333333, lng: 30.93627777777778 },
-                { name: "GLENVIEW 1", lat: -17.913916666666665, lng: 30.94263888888889 },
-                { name: "DAMAFALLS", lat: -17.86577777777778, lng: 31.239916666666666 },
-                { name: "HIGHFIELD MAPURANGA", lat: -17.82438888888889, lng: 30.937055555555556 },
-                { name: "GLENNORAH MASHWEDE", lat: -17.91333333333333, lng: 30.974249999999998 },
-                { name: "MAKONI", lat: -18.010555555555555, lng: 31.103166666666667 }
-            ],
-            bulawayo: [
-                { name: "COWDRY PARK ANTHERNS", lat: -20.083027777777776, lng: 28.504277777777776 },
-                { name: "COWDRY PARK PKNPAY", lat: -20.087999999999997, lng: 28.519027777777776 },
-                { name: "SOUTHERN CROSS", lat: -20.187638888888888, lng: 28.635805555555557 },
-                { name: "LUVEVE 5", lat: -20.102861111111114, lng: 28.516305555555554 },
-                { name: "MORNING SIDE", lat: -20.19725, lng: 28.579833333333333 },
-                { name: "HILLSIDE", lat: -20.194222222222223, lng: 28.5965 },
-                { name: "OLD PUMULA", lat: -20.14377777777778, lng: 28.474277777777775 },
-                { name: "MPOPOMA OUTLET", lat: -20.1475, lng: 28.53375 },
-                { name: "OLD LUVEVE", lat: -20.112444444444446, lng: 28.513055555555557 },
-                { name: "MZILIKAZI", lat: -20.138055555555557, lng: 28.566 },
-                { name: "MAKONI", lat: -20.16247222222222, lng: 28.474083333333333 },
-                { name: "SOKUSILE", lat: -20.18636111111111, lng: 28.52025 },
-                { name: "ESIGAYWENI", lat: -20.07525, lng: 28.508555555555557 },
-                { name: "EMGWANWINI", lat: -20.21761111111111, lng: 28.510305555555554 },
-                { name: "BELLEVUE", lat: -20.200916666666664, lng: 28.550416666666667 },
-                { name: "3RD", lat: -20.14752777777778, lng: 28.582944444444443 },
-                { name: "NORTHEND", lat: -20.146333333333335, lng: 28.59058333333333 },
-                { name: "TERMINUS", lat: -20.081444444444443, lng: 28.511305555555555 },
-                { name: "MPOMPINI", lat: -20.07102777777778, lng: 28.486694444444446 },
-                { name: "PUMULA EAST", lat: -20.14452777777778, lng: 28.493694444444447 },
-                { name: "HYDE PARK", lat: -20.151944444444442, lng: 28.506444444444444 },
-                { name: "MAKOKOBA", lat: -20.143472222222222, lng: 28.571166666666667 },
-                { name: "CARAVAN", lat: -20.07925, lng: 28.494194444444446 }
-            ]
+            harare: [ /* Harare locations data */ ],
+            bulawayo: [ /* Bulawayo locations data */ ]
         };
 
         let map;
@@ -434,16 +305,6 @@
                 );
 
                 if (!isAlreadySelected) {
-                    // Change marker color
-                    marker.setIcon(L.icon({
-                        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${selectedMarkers.length === 0 ? 'green' : 'red'}.png`,
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    }));
-
                     selectedMarkers.push({ location, marker });
 
                     // Update dropdowns
@@ -475,7 +336,7 @@
                 }
 
                 distanceLine = L.polyline(latlngs, {
-                    color: '#FF6B35',
+                    color: '#007bff',
                     weight: 4,
                     opacity: 0.8,
                     dashArray: '10, 5'
@@ -567,19 +428,7 @@
                 if (this.value && selectedMarkers.length === 2) {
                     // Remove second selection
                     const secondMarker = selectedMarkers[1];
-                    secondMarker.marker.setIcon(L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    }));
                     selectedMarkers.pop();
-                    if (distanceLine) {
-                        map.removeLayer(distanceLine);
-                        distanceLine = null;
-                    }
                 }
                 if (this.value) {
                     const location = locations[currentCity][this.value];
