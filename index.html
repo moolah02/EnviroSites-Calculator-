@@ -54,7 +54,9 @@
         }
 
         .tabs {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
             margin-bottom: 20px;
             background: #f8f9fa;
             border-radius: 12px;
@@ -63,14 +65,13 @@
         }
 
         .tab {
-            flex: 1;
-            padding: 15px 20px;
+            padding: 12px 15px;
             text-align: center;
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.3s ease;
             font-weight: 600;
-            font-size: 1.1em;
+            font-size: 0.95em;
         }
 
         .tab:hover {
@@ -82,6 +83,14 @@
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .tab.depot {
+            background: linear-gradient(135deg, #9C27B0, #673AB7);
+        }
+
+        .tab.depot.active {
+            background: linear-gradient(135deg, #9C27B0, #673AB7);
         }
 
         .map-container {
@@ -163,6 +172,15 @@
             box-shadow: none;
         }
 
+        .depot-btn {
+            background: linear-gradient(135deg, #9C27B0, #673AB7);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+        }
+
+        .depot-btn:hover {
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+        }
+
         .result {
             padding: 20px;
             background: linear-gradient(135deg, #17a2b8, #138496);
@@ -202,10 +220,25 @@
             box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
         }
 
+        .depot-instruction {
+            background: linear-gradient(135deg, #e1bee7, #ce93d8);
+            color: #4a148c;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
                 padding: 15px;
+            }
+            
+            .tabs {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .tab {
+                padding: 10px 8px;
+                font-size: 0.85em;
             }
             
             .controls {
@@ -223,19 +256,25 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-map-marked-alt"></i> EnviroGas Sites Distance Calculator</h1>
-            <p>Calculate distances between Sites in Harare and Bulawayo</p>
+            <p>Calculate distances between sites and from depots to all sites</p>
         </div>
 
-        <div class="instruction">
-            <i class="fas fa-info-circle"></i> Select a city tab, choose two different Sites, then calculate the distance between them
+        <div class="instruction" id="instruction">
+            <i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the distance between them
         </div>
 
         <div class="tabs">
-            <div class="tab active" data-city="harare">
-                <i class="fas fa-city"></i> Harare
+            <div class="tab active" data-mode="sites" data-city="harare">
+                <i class="fas fa-city"></i> Harare Sites
             </div>
-            <div class="tab" data-city="bulawayo">
-                <i class="fas fa-building"></i> Bulawayo
+            <div class="tab" data-mode="sites" data-city="bulawayo">
+                <i class="fas fa-building"></i> Bulawayo Sites
+            </div>
+            <div class="tab depot" data-mode="depot" data-city="harare">
+                <i class="fas fa-warehouse"></i> Harare Depot
+            </div>
+            <div class="tab depot" data-mode="depot" data-city="bulawayo">
+                <i class="fas fa-warehouse"></i> Bulawayo Depot
             </div>
         </div>
 
@@ -243,7 +282,7 @@
             <div id="map"></div>
         </div>
 
-        <div class="controls">
+        <div class="controls" id="controls">
             <div class="select-group">
                 <label for="location1"><i class="fas fa-map-pin"></i> First Site:</label>
                 <select id="location1">
@@ -358,10 +397,19 @@
             ]
         };
 
+        // Depot coordinates
+        const depots = {
+            harare: { name: "Harare (Msasa) Depot", lat: -17.8651645, lng: 31.1437361 },
+            bulawayo: { name: "Bulawayo Depot", lat: -20.1753621, lng: 28.5573101 }
+        };
+
         let map;
         let currentCity = 'harare';
+        let currentMode = 'sites';
         let selectedMarkers = [];
         let distanceLine = null;
+        let depotMarker = null;
+        let depotLines = [];
 
         // Initialize map
         function initMap() {
@@ -371,25 +419,28 @@
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            loadCityData('harare');
+            loadData('harare', 'sites');
         }
 
-        // Load city data
-        function loadCityData(city) {
-            map.eachLayer(layer => {
-                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                    map.removeLayer(layer);
-                }
-            });
+        // Load data based on mode
+        function loadData(city, mode) {
+            clearMap();
+            currentCity = city;
+            currentMode = mode;
 
-            selectedMarkers = [];
-            distanceLine = null;
-            document.getElementById('result').classList.remove('show');
+            if (mode === 'sites') {
+                loadSitesMode(city);
+            } else {
+                loadDepotMode(city);
+            }
+        }
 
+        // Load sites mode
+        function loadSitesMode(city) {
             const cityLocations = locations[city];
             const bounds = L.latLngBounds();
 
-            // Add markers
+            // Add site markers
             cityLocations.forEach(location => {
                 const marker = L.marker([location.lat, location.lng])
                     .bindTooltip(location.name, { permanent: false, direction: 'top' })
@@ -403,9 +454,190 @@
             });
 
             map.fitBounds(bounds, { padding: [20, 20] });
-
-            // Update dropdowns
             updateDropdowns(city);
+            showSitesControls();
+        }
+
+        // Load depot mode
+        function loadDepotMode(city) {
+            const cityLocations = locations[city];
+            const depot = depots[city];
+            const bounds = L.latLngBounds();
+
+            // Add depot marker
+            depotMarker = L.marker([depot.lat, depot.lng], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).bindTooltip(depot.name, { permanent: true, direction: 'top' }).addTo(map);
+            
+            bounds.extend([depot.lat, depot.lng]);
+
+            // Add site markers
+            cityLocations.forEach(location => {
+                const marker = L.marker([location.lat, location.lng])
+                    .bindTooltip(location.name, { permanent: false, direction: 'top' })
+                    .addTo(map);
+                
+                bounds.extend([location.lat, location.lng]);
+
+                marker.on('click', function() {
+                    selectDepotSite(location, marker);
+                });
+            });
+
+            map.fitBounds(bounds, { padding: [20, 20] });
+            showDepotControls();
+        }
+
+        // Clear map
+        function clearMap() {
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            selectedMarkers = [];
+            distanceLine = null;
+            depotMarker = null;
+            depotLines = [];
+            document.getElementById('result').classList.remove('show');
+        }
+
+        // Show sites controls
+        function showSitesControls() {
+            document.getElementById('controls').className = 'controls';
+            document.getElementById('instruction').className = 'instruction';
+            document.getElementById('instruction').innerHTML = '<i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the distance between them';
+        }
+
+        // Show depot controls
+        function showDepotControls() {
+            document.getElementById('controls').className = 'controls';
+            document.getElementById('controls').innerHTML = `
+                <div class="select-group">
+                    <label for="depotSiteSelect"><i class="fas fa-map-pin"></i> Select Site:</label>
+                    <select id="depotSiteSelect">
+                        <option value="">Select a site</option>
+                    </select>
+                </div>
+                <div></div>
+                <button class="calculate-btn depot-btn" id="depotCalculateBtn" disabled>
+                    <i class="fas fa-calculator"></i> Calculate Distance
+                </button>
+            `;
+            document.getElementById('instruction').className = 'instruction depot-instruction';
+            document.getElementById('instruction').innerHTML = '<i class="fas fa-warehouse"></i> Select a site to calculate distance from depot';
+            
+            // Populate depot site dropdown
+            updateDepotDropdown(currentCity);
+        }
+
+        // Update depot dropdown
+        function updateDepotDropdown(city) {
+            const depotSiteSelect = document.getElementById('depotSiteSelect');
+            if (!depotSiteSelect) return;
+
+            // Clear existing options
+            depotSiteSelect.innerHTML = '<option value="">Select a site</option>';
+
+            // Add new options
+            locations[city].forEach((location, index) => {
+                const option = new Option(location.name, index);
+                depotSiteSelect.add(option);
+            });
+        }
+
+        // Select depot site
+        function selectDepotSite(location, marker) {
+            if (currentMode !== 'depot') return;
+
+            // Reset all markers to blue first
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker && layer !== depotMarker) {
+                    layer.setIcon(L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    }));
+                }
+            });
+
+            // Clear any existing depot lines
+            depotLines.forEach(line => map.removeLayer(line));
+            depotLines = [];
+
+            // Change selected marker to green
+            marker.setIcon(L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            }));
+
+            // Update dropdown
+            const depotSiteSelect = document.getElementById('depotSiteSelect');
+            if (depotSiteSelect) {
+                depotSiteSelect.value = locations[currentCity].findIndex(l => l.name === location.name);
+            }
+
+            // Store selected site
+            selectedMarkers = [{ location, marker }];
+            updateDepotCalculateButton();
+        }
+
+        // Update depot calculate button state
+        function updateDepotCalculateButton() {
+            const btn = document.getElementById('depotCalculateBtn');
+            if (btn) {
+                btn.disabled = selectedMarkers.length === 0;
+            }
+        }
+
+        // Calculate depot distance
+        function calculateDepotDistance() {
+            if (selectedMarkers.length === 1 && depotMarker) {
+                const depot = depots[currentCity];
+                const selectedSite = selectedMarkers[0].location;
+                
+                const distance = calculateDistance(
+                    depot.lat, depot.lng,
+                    selectedSite.lat, selectedSite.lng
+                );
+
+                // Draw line from depot to selected site
+                const line = L.polyline([
+                    [depot.lat, depot.lng],
+                    [selectedSite.lat, selectedSite.lng]
+                ], {
+                    color: '#9C27B0',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 5'
+                }).addTo(map);
+
+                depotLines.push(line);
+
+                // Show result
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `
+                    <i class="fas fa-route"></i>
+                    Distance from <strong>${depot.name}</strong> to <strong>${selectedSite.name}</strong>: 
+                    <strong>${distance.toFixed(2)} km</strong>
+                `;
+                resultDiv.classList.add('show');
+            }
         }
 
         // Update dropdowns
@@ -426,8 +658,10 @@
             });
         }
 
-        // Select location
+        // Select location (for sites mode)
         function selectLocation(location, marker) {
+            if (currentMode !== 'sites') return;
+
             if (selectedMarkers.length < 2) {
                 const isAlreadySelected = selectedMarkers.some(selected => 
                     selected.location.name === location.name
@@ -498,7 +732,9 @@
         // Update calculate button state
         function updateCalculateButton() {
             const btn = document.getElementById('calculateBtn');
-            btn.disabled = selectedMarkers.length !== 2;
+            if (btn) {
+                btn.disabled = selectedMarkers.length !== 2;
+            }
         }
 
         // Clear selections
@@ -521,8 +757,11 @@
                 distanceLine = null;
             }
 
-            document.getElementById('location1').value = '';
-            document.getElementById('location2').value = '';
+            const location1 = document.getElementById('location1');
+            const location2 = document.getElementById('location2');
+            if (location1) location1.value = '';
+            if (location2) location2.value = '';
+            
             document.getElementById('result').classList.remove('show');
             updateCalculateButton();
         }
@@ -537,82 +776,129 @@
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                     
-                    currentCity = this.dataset.city;
+                    const city = this.dataset.city;
+                    const mode = this.dataset.mode;
+                    
                     clearSelections();
-                    loadCityData(currentCity);
+                    loadData(city, mode);
                 });
             });
 
-            // Dropdown selections
-            document.getElementById('location1').addEventListener('change', function() {
-                if (this.value && selectedMarkers.length > 0) {
-                    clearSelections();
-                }
-                if (this.value) {
-                    const location = locations[currentCity][this.value];
-                    // Find and click the corresponding marker
-                    map.eachLayer(layer => {
-                        if (layer instanceof L.Marker) {
-                            const pos = layer.getLatLng();
-                            if (Math.abs(pos.lat - location.lat) < 0.0001 && 
-                                Math.abs(pos.lng - location.lng) < 0.0001) {
-                                selectLocation(location, layer);
+            // Dropdown event delegation
+            document.addEventListener('change', function(e) {
+                if (e.target.id === 'location1') {
+                    if (e.target.value && selectedMarkers.length > 0) {
+                        clearSelections();
+                    }
+                    if (e.target.value) {
+                        const location = locations[currentCity][e.target.value];
+                        // Find and click the corresponding marker
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.Marker && layer !== depotMarker) {
+                                const pos = layer.getLatLng();
+                                if (Math.abs(pos.lat - location.lat) < 0.0001 && 
+                                    Math.abs(pos.lng - location.lng) < 0.0001) {
+                                    selectLocation(location, layer);
+                                }
                             }
-                        }
-                    });
-                }
-            });
-
-            document.getElementById('location2').addEventListener('change', function() {
-                if (this.value && selectedMarkers.length === 2) {
-                    // Remove second selection
-                    const secondMarker = selectedMarkers[1];
-                    secondMarker.marker.setIcon(L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    }));
-                    selectedMarkers.pop();
-                    if (distanceLine) {
-                        map.removeLayer(distanceLine);
-                        distanceLine = null;
+                        });
                     }
                 }
-                if (this.value) {
-                    const location = locations[currentCity][this.value];
-                    // Find and click the corresponding marker
-                    map.eachLayer(layer => {
-                        if (layer instanceof L.Marker) {
-                            const pos = layer.getLatLng();
-                            if (Math.abs(pos.lat - location.lat) < 0.0001 && 
-                                Math.abs(pos.lng - location.lng) < 0.0001) {
-                                selectLocation(location, layer);
-                            }
+
+                if (e.target.id === 'location2') {
+                    if (e.target.value && selectedMarkers.length === 2) {
+                        // Remove second selection
+                        const secondMarker = selectedMarkers[1];
+                        secondMarker.marker.setIcon(L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        }));
+                        selectedMarkers.pop();
+                        if (distanceLine) {
+                            map.removeLayer(distanceLine);
+                            distanceLine = null;
                         }
-                    });
+                    }
+                    if (e.target.value) {
+                        const location = locations[currentCity][e.target.value];
+                        // Find and click the corresponding marker
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.Marker && layer !== depotMarker) {
+                                const pos = layer.getLatLng();
+                                if (Math.abs(pos.lat - location.lat) < 0.0001 && 
+                                    Math.abs(pos.lng - location.lng) < 0.0001) {
+                                    selectLocation(location, layer);
+                                }
+                            }
+                        });
+                    }
+                }
+
+                if (e.target.id === 'depotSiteSelect') {
+                    if (e.target.value) {
+                        const location = locations[currentCity][e.target.value];
+                        // Find and click the corresponding marker
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.Marker && layer !== depotMarker) {
+                                const pos = layer.getLatLng();
+                                if (Math.abs(pos.lat - location.lat) < 0.0001 && 
+                                    Math.abs(pos.lng - location.lng) < 0.0001) {
+                                    selectDepotSite(location, layer);
+                                }
+                            }
+                        });
+                    } else {
+                        // Clear selection
+                        selectedMarkers = [];
+                        depotLines.forEach(line => map.removeLayer(line));
+                        depotLines = [];
+                        document.getElementById('result').classList.remove('show');
+                        updateDepotCalculateButton();
+                        
+                        // Reset all markers to blue
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.Marker && layer !== depotMarker) {
+                                layer.setIcon(L.icon({
+                                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                    iconSize: [25, 41],
+                                    iconAnchor: [12, 41],
+                                    popupAnchor: [1, -34],
+                                    shadowSize: [41, 41]
+                                }));
+                            }
+                        });
+                    }
                 }
             });
 
-            // Calculate button
-            document.getElementById('calculateBtn').addEventListener('click', function() {
-                if (selectedMarkers.length === 2) {
-                    const distance = calculateDistance(
-                        selectedMarkers[0].location.lat,
-                        selectedMarkers[0].location.lng,
-                        selectedMarkers[1].location.lat,
-                        selectedMarkers[1].location.lng
-                    );
+            // Calculate button event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.id === 'calculateBtn') {
+                    if (selectedMarkers.length === 2) {
+                        const distance = calculateDistance(
+                            selectedMarkers[0].location.lat,
+                            selectedMarkers[0].location.lng,
+                            selectedMarkers[1].location.lat,
+                            selectedMarkers[1].location.lng
+                        );
 
-                    const resultDiv = document.getElementById('result');
-                    resultDiv.innerHTML = `
-                        <i class="fas fa-route"></i>
-                        Distance from <strong>${selectedMarkers[0].location.name}</strong> to <strong>${selectedMarkers[1].location.name}</strong>: 
-                        <strong>${distance.toFixed(2)} km</strong>
-                    `;
-                    resultDiv.classList.add('show');
+                        const resultDiv = document.getElementById('result');
+                        resultDiv.innerHTML = `
+                            <i class="fas fa-route"></i>
+                            Distance from <strong>${selectedMarkers[0].location.name}</strong> to <strong>${selectedMarkers[1].location.name}</strong>: 
+                            <strong>${distance.toFixed(2)} km</strong>
+                        `;
+                        resultDiv.classList.add('show');
+                    }
+                }
+
+                if (e.target.id === 'depotCalculateBtn') {
+                    calculateDepotDistance();
                 }
             });
         });
