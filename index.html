@@ -15,7 +15,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             min-height: 100vh;
             color: #333;
         }
@@ -24,10 +24,9 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
             margin-bottom: 20px;
         }
@@ -35,77 +34,82 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 15px;
+            padding: 25px;
+            background: #4CAF50;
+            border-radius: 8px;
             color: white;
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
         }
 
         .header p {
             font-size: 1.2em;
-            opacity: 0.9;
         }
 
         .tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
+            gap: 2px;
             margin-bottom: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 4px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: #e9ecef;
+            border-radius: 6px;
+            padding: 2px;
         }
 
         .tab {
             padding: 12px 15px;
             text-align: center;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
             font-weight: 600;
             font-size: 0.95em;
+            background: white;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
         }
 
         .tab:hover {
-            background: rgba(76, 175, 80, 0.1);
-            transform: translateY(-2px);
+            background: #f8f9fa;
+            color: #495057;
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
+            background: #4CAF50;
             color: white;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            border-color: #4CAF50;
         }
 
         .tab.depot {
-            background: linear-gradient(135deg, #9C27B0, #673AB7);
+            background: white;
+            color: #6c757d;
         }
 
         .tab.depot.active {
-            background: linear-gradient(135deg, #9C27B0, #673AB7);
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
         }
 
         .map-container {
             position: relative;
             height: 500px;
-            border-radius: 15px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            border: 1px solid #dee2e6;
         }
 
         #map {
             width: 100%;
             height: 100%;
-            border-radius: 15px;
+            border-radius: 8px;
         }
 
         .controls {
@@ -115,9 +119,9 @@
             align-items: end;
             margin-bottom: 20px;
             padding: 20px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
         }
 
         .select-group {
@@ -133,96 +137,78 @@
 
         select {
             padding: 12px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
             font-size: 1em;
             background: white;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s ease;
         }
 
         select:focus {
             outline: none;
             border-color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
         }
 
         .calculate-btn {
             padding: 12px 25px;
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 1em;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+            transition: background-color 0.2s ease;
         }
 
         .calculate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+            background: #45a049;
         }
 
         .calculate-btn:disabled {
             background: #6c757d;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .depot-btn {
-            background: linear-gradient(135deg, #9C27B0, #673AB7);
-            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+            background: #4CAF50;
         }
 
         .depot-btn:hover {
-            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+            background: #45a049;
         }
 
         .result {
             padding: 20px;
-            background: linear-gradient(135deg, #17a2b8, #138496);
+            background: #4CAF50;
             color: white;
-            border-radius: 15px;
+            border-radius: 8px;
             text-align: center;
             font-size: 1.2em;
             font-weight: 600;
             display: none;
-            box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+            border: 1px solid #45a049;
         }
 
         .result.show {
             display: block;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .instruction {
-            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            background: #e9ecef;
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
             font-weight: 600;
-            color: #2d3436;
-            box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
+            color: #495057;
+            border: 1px solid #ced4da;
         }
 
         .depot-instruction {
-            background: linear-gradient(135deg, #e1bee7, #ce93d8);
-            color: #4a148c;
+            background: #e9ecef;
+            color: #495057;
         }
 
         @media (max-width: 768px) {
@@ -368,7 +354,16 @@
                 { name: "DAMAFALLS", lat: -17.86577777777778, lng: 31.239916666666666 },
                 { name: "HIGHFIELD MAPURANGA", lat: -17.82438888888889, lng: 30.937055555555556 },
                 { name: "GLENNORAH MASHWEDE", lat: -17.91333333333333, lng: 30.974249999999998 },
-                { name: "MAKONI", lat: -18.010555555555555, lng: 31.103166666666667 }
+                { name: "MAKONI", lat: -18.010555555555555, lng: 31.103166666666667 },
+                // New sites added
+                { name: "CROWBOROUGH PHASE 3", lat: -17.8469586, lng: 30.9336163 },
+                { name: "OK GLENVIEW", lat: -17.9063851, lng: 30.9468703 },
+                { name: "MABVUKU", lat: -17.8377219, lng: 31.195741 },
+                { name: "DZ EXTENSION TWO", lat: -17.7848078, lng: 30.9117647 },
+                { name: "CROWBOROUGH PHASE 2", lat: -17.840006, lng: 30.9343214 },
+                { name: "GLENVIEW 3", lat: -17.901855, lng: 30.9389234 },
+                { name: "OK MBARE", lat: -17.857525, lng: 31.0385603 },
+                { name: "GLEN NORAH", lat: -17.913320, lng: 30.974196 }
             ],
             bulawayo: [
                 { name: "COWDRY PARK ANTHERNS", lat: -20.083027777777776, lng: 28.504277777777776 },
@@ -393,7 +388,21 @@
                 { name: "PUMULA EAST", lat: -20.14452777777778, lng: 28.493694444444447 },
                 { name: "HYDE PARK", lat: -20.151944444444442, lng: 28.506444444444444 },
                 { name: "MAKOKOBA", lat: -20.143472222222222, lng: 28.571166666666667 },
-                { name: "CARAVAN", lat: -20.07925, lng: 28.494194444444446 }
+                { name: "CARAVAN", lat: -20.07925, lng: 28.494194444444446 },
+                // New sites added
+                { name: "REDAN BELLEVUE", lat: -20.201037, lng: 28.550278 },
+                { name: "ENTUMBANE HLALO", lat: -20.113510, lng: 28.541481 },
+                { name: "NJUBE 2", lat: -20.138456, lng: 28.521831 },
+                { name: "MAGWEGWE NORTH", lat: -20.121616, lng: 28.496177 },
+                { name: "NJUBE", lat: -20.135386, lng: 28.532068 },
+                { name: "NKETA 7", lat: -20.197457, lng: 28.538213 },
+                { name: "PUMULA OLD", lat: -20.143826, lng: 28.474247 },
+                { name: "PUMULA NORTH", lat: -20.133975, lng: 28.483600 },
+                { name: "BURNSIDE", lat: -20.201791, lng: 28.604710 },
+                { name: "MAGWEGWE OLD", lat: -20.137573, lng: 28.506303 },
+                { name: "GWABALANDA", lat: -20.1120289, lng: 28.4971004 },
+                { name: "ESIGODWENI", lat: -20.078316, lng: 28.483540 },
+                { name: "NKETA 8", lat: -20.201117, lng: 28.518009 }
             ]
         };
 
@@ -547,9 +556,13 @@
             // Clear existing options
             depotSiteSelect.innerHTML = '<option value="">Select a site</option>';
 
-            // Add new options
-            locations[city].forEach((location, index) => {
-                const option = new Option(location.name, index);
+            // Sort locations alphabetically by name
+            const sortedLocations = [...locations[city]].sort((a, b) => a.name.localeCompare(b.name));
+
+            // Add new options with original indices
+            sortedLocations.forEach((location) => {
+                const originalIndex = locations[city].findIndex(l => l.name === location.name);
+                const option = new Option(location.name, originalIndex);
                 depotSiteSelect.add(option);
             });
         }
@@ -649,10 +662,14 @@
             location1Select.innerHTML = '<option value="">Select first location</option>';
             location2Select.innerHTML = '<option value="">Select second location</option>';
 
-            // Add new options
-            locations[city].forEach((location, index) => {
-                const option1 = new Option(location.name, index);
-                const option2 = new Option(location.name, index);
+            // Sort locations alphabetically by name
+            const sortedLocations = [...locations[city]].sort((a, b) => a.name.localeCompare(b.name));
+
+            // Add new options with original indices
+            sortedLocations.forEach((location) => {
+                const originalIndex = locations[city].findIndex(l => l.name === location.name);
+                const option1 = new Option(location.name, originalIndex);
+                const option2 = new Option(location.name, originalIndex);
                 location1Select.add(option1);
                 location2Select.add(option2);
             });
