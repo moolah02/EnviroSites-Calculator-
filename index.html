@@ -51,6 +51,63 @@
             font-size: 1.2em;
         }
 
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
         .tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -211,6 +268,13 @@
             color: #495057;
         }
 
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #6c757d;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -242,11 +306,17 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-map-marked-alt"></i> EnviroGas Sites Distance Calculator</h1>
-            <p>Calculate distances between sites and from depots to all sites</p>
+            <p>Calculate distances between sites and from depots to all sites using road networks</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="siteSearch" class="search-input" placeholder="Search for a site by name...">
+            <i class="fas fa-search search-icon"></i>
+            <div id="searchResults" class="search-results"></div>
         </div>
 
         <div class="instruction" id="instruction">
-            <i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the distance between them
+            <i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the road distance between them
         </div>
 
         <div class="tabs">
@@ -282,8 +352,12 @@
                 </select>
             </div>
             <button class="calculate-btn" id="calculateBtn" disabled>
-                <i class="fas fa-calculator"></i> Calculate Distance
+                <i class="fas fa-calculator"></i> Calculate Road Distance
             </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-spin"></i> Calculating road distance...
         </div>
 
         <div class="result" id="result"></div>
@@ -343,27 +417,27 @@
                 { name: "GRANARY PHASE4", lat: -17.842305555555555, lng: 30.889916666666664 },
                 { name: "REDAN MBARE", lat: -17.863750000000003, lng: 31.03827777777778 },
                 { name: "GRANARY PHASE 1", lat: -17.86013888888889, lng: 30.895805555555555 },
-                { name: "MBARE OK", lat: -17.85725, lng: 31.04125 },
+                { name: "MBARE OK", lat: -17.857525695818225, lng: 31.041128996383215 },
                 { name: "GRANARY PHASE2", lat: -17.849138888888888, lng: 30.887027777777778 },
                 { name: "MBARE STODAD", lat: -17.867583333333332, lng: 31.03175 },
                 { name: "GRANARY PHASE 3", lat: -17.848888888888887, lng: 30.872194444444446 },
-                { name: "MBARE RUNYARARO", lat: -17.830527777777778, lng: 31.008777777777777 },
+                { name: "BELVEDERE-DIVARIS", lat: -17.830527777777778, lng: 31.008777777777777 },
                 { name: "CROWBOROUGH 2", lat: -17.87366666666667, lng: 31.213416666666667 },
                 { name: "CROWBOROUGH 3", lat: -17.84658333333333, lng: 30.93627777777778 },
                 { name: "GLENVIEW 1", lat: -17.913916666666665, lng: 30.94263888888889 },
                 { name: "DAMAFALLS", lat: -17.86577777777778, lng: 31.239916666666666 },
-                { name: "HIGHFIELD MAPURANGA", lat: -17.82438888888889, lng: 30.937055555555556 },
                 { name: "GLENNORAH MASHWEDE", lat: -17.91333333333333, lng: 30.974249999999998 },
                 { name: "MAKONI", lat: -18.010555555555555, lng: 31.103166666666667 },
-                // New sites added
-                { name: "CROWBOROUGH PHASE 3", lat: -17.8469586, lng: 30.9336163 },
-                { name: "OK GLENVIEW", lat: -17.9063851, lng: 30.9468703 },
+                // Updated and new sites
+                { name: "CROWBOROUGH PHASE 3", lat: -17.846963061347605, lng: 30.936056327345486 },
                 { name: "MABVUKU", lat: -17.8377219, lng: 31.195741 },
                 { name: "DZ EXTENSION TWO", lat: -17.7848078, lng: 30.9117647 },
-                { name: "CROWBOROUGH PHASE 2", lat: -17.840006, lng: 30.9343214 },
+                { name: "CROWBOROUGH PHASE 2", lat: -17.839644296356695, lng: 30.936889313984146 },
                 { name: "GLENVIEW 3", lat: -17.901855, lng: 30.9389234 },
-                { name: "OK MBARE", lat: -17.857525, lng: 31.0385603 },
-                { name: "GLEN NORAH", lat: -17.913320, lng: 30.974196 }
+                { name: "GLEN NORAH", lat: -17.913320, lng: 30.974196 },
+                { name: "BUDIRIRO 4", lat: -17.894939991650837, lng: 30.913696416735974 },
+                { name: "WILLOWVALE", lat: -17.8802923853732, lng: 30.9877874271744 },
+                { name: "NORTON", lat: -17.880988865312947, lng: 30.66366793472488 }
             ],
             bulawayo: [
                 { name: "COWDRY PARK ANTHERNS", lat: -20.083027777777776, lng: 28.504277777777776 },
@@ -416,7 +490,7 @@
         let currentCity = 'harare';
         let currentMode = 'sites';
         let selectedMarkers = [];
-        let distanceLine = null;
+        let routeLine = null;
         let depotMarker = null;
         let depotLines = [];
 
@@ -429,6 +503,107 @@
             }).addTo(map);
 
             loadData('harare', 'sites');
+        }
+
+        // Search functionality
+        function initSearch() {
+            const searchInput = document.getElementById('siteSearch');
+            const searchResults = document.getElementById('searchResults');
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+
+                const allLocations = locations[currentCity];
+                const filteredResults = allLocations.filter(location => 
+                    location.name.toLowerCase().includes(query)
+                );
+
+                if (filteredResults.length > 0) {
+                    searchResults.innerHTML = filteredResults.map(location => 
+                        `<div class="search-result-item" data-lat="${location.lat}" data-lng="${location.lng}" data-name="${location.name}">
+                            ${location.name}
+                        </div>`
+                    ).join('');
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item">No sites found</div>';
+                    searchResults.style.display = 'block';
+                }
+            });
+
+            searchResults.addEventListener('click', function(e) {
+                if (e.target.classList.contains('search-result-item') && e.target.dataset.lat) {
+                    const lat = parseFloat(e.target.dataset.lat);
+                    const lng = parseFloat(e.target.dataset.lng);
+                    const name = e.target.dataset.name;
+                    
+                    map.setView([lat, lng], 15);
+                    
+                    // Highlight the marker temporarily
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker && layer !== depotMarker) {
+                            const pos = layer.getLatLng();
+                            if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001) {
+                                layer.openTooltip();
+                                setTimeout(() => layer.closeTooltip(), 3000);
+                            }
+                        }
+                    });
+
+                    searchInput.value = name;
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        // Calculate road distance using OSRM
+        async function calculateRoadDistance(lat1, lng1, lat2, lng2) {
+            try {
+                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson`);
+                const data = await response.json();
+                
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    const distance = route.distance / 1000; // Convert to kilometers
+                    const geometry = route.geometry;
+                    
+                    return {
+                        distance: distance,
+                        geometry: geometry
+                    };
+                }
+                throw new Error('No route found');
+            } catch (error) {
+                console.warn('Road routing failed, using straight-line distance:', error);
+                return {
+                    distance: calculateStraightDistance(lat1, lng1, lat2, lng2),
+                    geometry: null
+                };
+            }
+        }
+
+        // Calculate straight-line distance using Haversine formula (fallback)
+        function calculateStraightDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
         // Load data based on mode
@@ -513,7 +688,7 @@
             });
 
             selectedMarkers = [];
-            distanceLine = null;
+            routeLine = null;
             depotMarker = null;
             depotLines = [];
             document.getElementById('result').classList.remove('show');
@@ -523,7 +698,7 @@
         function showSitesControls() {
             document.getElementById('controls').className = 'controls';
             document.getElementById('instruction').className = 'instruction';
-            document.getElementById('instruction').innerHTML = '<i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the distance between them';
+            document.getElementById('instruction').innerHTML = '<i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the road distance between them';
         }
 
         // Show depot controls
@@ -538,11 +713,11 @@
                 </div>
                 <div></div>
                 <button class="calculate-btn depot-btn" id="depotCalculateBtn" disabled>
-                    <i class="fas fa-calculator"></i> Calculate Distance
+                    <i class="fas fa-calculator"></i> Calculate Road Distance
                 </button>
             `;
             document.getElementById('instruction').className = 'instruction depot-instruction';
-            document.getElementById('instruction').innerHTML = '<i class="fas fa-warehouse"></i> Select a site to calculate distance from depot';
+            document.getElementById('instruction').innerHTML = '<i class="fas fa-warehouse"></i> Select a site to calculate road distance from depot';
             
             // Populate depot site dropdown
             updateDepotDropdown(currentCity);
@@ -619,37 +794,57 @@
         }
 
         // Calculate depot distance
-        function calculateDepotDistance() {
+        async function calculateDepotDistance() {
             if (selectedMarkers.length === 1 && depotMarker) {
                 const depot = depots[currentCity];
                 const selectedSite = selectedMarkers[0].location;
                 
-                const distance = calculateDistance(
-                    depot.lat, depot.lng,
-                    selectedSite.lat, selectedSite.lng
-                );
+                document.getElementById('loading').style.display = 'block';
+                
+                try {
+                    const routeData = await calculateRoadDistance(
+                        depot.lat, depot.lng,
+                        selectedSite.lat, selectedSite.lng
+                    );
 
-                // Draw line from depot to selected site
-                const line = L.polyline([
-                    [depot.lat, depot.lng],
-                    [selectedSite.lat, selectedSite.lng]
-                ], {
-                    color: '#9C27B0',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '10, 5'
-                }).addTo(map);
+                    // Draw route line if geometry is available
+                    if (routeData.geometry) {
+                        const line = L.geoJSON(routeData.geometry, {
+                            style: {
+                                color: '#9C27B0',
+                                weight: 4,
+                                opacity: 0.8
+                            }
+                        }).addTo(map);
+                        depotLines.push(line);
+                    } else {
+                        // Fallback to straight line
+                        const line = L.polyline([
+                            [depot.lat, depot.lng],
+                            [selectedSite.lat, selectedSite.lng]
+                        ], {
+                            color: '#9C27B0',
+                            weight: 4,
+                            opacity: 0.8,
+                            dashArray: '10, 5'
+                        }).addTo(map);
+                        depotLines.push(line);
+                    }
 
-                depotLines.push(line);
-
-                // Show result
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = `
-                    <i class="fas fa-route"></i>
-                    Distance from <strong>${depot.name}</strong> to <strong>${selectedSite.name}</strong>: 
-                    <strong>${distance.toFixed(2)} km</strong>
-                `;
-                resultDiv.classList.add('show');
+                    // Show result
+                    const resultDiv = document.getElementById('result');
+                    const distanceType = routeData.geometry ? 'Road distance' : 'Straight-line distance';
+                    resultDiv.innerHTML = `
+                        <i class="fas fa-route"></i>
+                        ${distanceType} from <strong>${depot.name}</strong> to <strong>${selectedSite.name}</strong>: 
+                        <strong>${routeData.distance.toFixed(2)} km</strong>
+                    `;
+                    resultDiv.classList.add('show');
+                } catch (error) {
+                    console.error('Error calculating distance:', error);
+                } finally {
+                    document.getElementById('loading').style.display = 'none';
+                }
             }
         }
 
@@ -705,45 +900,8 @@
                     }
 
                     updateCalculateButton();
-
-                    if (selectedMarkers.length === 2) {
-                        drawLine();
-                    }
                 }
             }
-        }
-
-        // Draw line between selected points
-        function drawLine() {
-            if (selectedMarkers.length === 2) {
-                const latlngs = [
-                    [selectedMarkers[0].location.lat, selectedMarkers[0].location.lng],
-                    [selectedMarkers[1].location.lat, selectedMarkers[1].location.lng]
-                ];
-
-                if (distanceLine) {
-                    map.removeLayer(distanceLine);
-                }
-
-                distanceLine = L.polyline(latlngs, {
-                    color: '#FF6B35',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '10, 5'
-                }).addTo(map);
-            }
-        }
-
-        // Calculate distance using Haversine formula
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth's radius in kilometers
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
         }
 
         // Update calculate button state
@@ -769,9 +927,9 @@
 
             selectedMarkers = [];
             
-            if (distanceLine) {
-                map.removeLayer(distanceLine);
-                distanceLine = null;
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
             }
 
             const location1 = document.getElementById('location1');
@@ -786,6 +944,7 @@
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
+            initSearch();
 
             // Tab switching
             document.querySelectorAll('.tab').forEach(tab => {
@@ -835,9 +994,9 @@
                             shadowSize: [41, 41]
                         }));
                         selectedMarkers.pop();
-                        if (distanceLine) {
-                            map.removeLayer(distanceLine);
-                            distanceLine = null;
+                        if (routeLine) {
+                            map.removeLayer(routeLine);
+                            routeLine = null;
                         }
                     }
                     if (e.target.value) {
@@ -894,28 +1053,65 @@
             });
 
             // Calculate button event delegation
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', async function(e) {
                 if (e.target.id === 'calculateBtn') {
                     if (selectedMarkers.length === 2) {
-                        const distance = calculateDistance(
-                            selectedMarkers[0].location.lat,
-                            selectedMarkers[0].location.lng,
-                            selectedMarkers[1].location.lat,
-                            selectedMarkers[1].location.lng
-                        );
+                        document.getElementById('loading').style.display = 'block';
+                        
+                        try {
+                            const routeData = await calculateRoadDistance(
+                                selectedMarkers[0].location.lat,
+                                selectedMarkers[0].location.lng,
+                                selectedMarkers[1].location.lat,
+                                selectedMarkers[1].location.lng
+                            );
 
-                        const resultDiv = document.getElementById('result');
-                        resultDiv.innerHTML = `
-                            <i class="fas fa-route"></i>
-                            Distance from <strong>${selectedMarkers[0].location.name}</strong> to <strong>${selectedMarkers[1].location.name}</strong>: 
-                            <strong>${distance.toFixed(2)} km</strong>
-                        `;
-                        resultDiv.classList.add('show');
+                            // Remove existing route line
+                            if (routeLine) {
+                                map.removeLayer(routeLine);
+                            }
+
+                            // Draw route line if geometry is available
+                            if (routeData.geometry) {
+                                routeLine = L.geoJSON(routeData.geometry, {
+                                    style: {
+                                        color: '#FF6B35',
+                                        weight: 4,
+                                        opacity: 0.8
+                                    }
+                                }).addTo(map);
+                            } else {
+                                // Fallback to straight line
+                                const latlngs = [
+                                    [selectedMarkers[0].location.lat, selectedMarkers[0].location.lng],
+                                    [selectedMarkers[1].location.lat, selectedMarkers[1].location.lng]
+                                ];
+                                routeLine = L.polyline(latlngs, {
+                                    color: '#FF6B35',
+                                    weight: 4,
+                                    opacity: 0.8,
+                                    dashArray: '10, 5'
+                                }).addTo(map);
+                            }
+
+                            const resultDiv = document.getElementById('result');
+                            const distanceType = routeData.geometry ? 'Road distance' : 'Straight-line distance';
+                            resultDiv.innerHTML = `
+                                <i class="fas fa-route"></i>
+                                ${distanceType} from <strong>${selectedMarkers[0].location.name}</strong> to <strong>${selectedMarkers[1].location.name}</strong>: 
+                                <strong>${routeData.distance.toFixed(2)} km</strong>
+                            `;
+                            resultDiv.classList.add('show');
+                        } catch (error) {
+                            console.error('Error calculating distance:', error);
+                        } finally {
+                            document.getElementById('loading').style.display = 'none';
+                        }
                     }
                 }
 
                 if (e.target.id === 'depotCalculateBtn') {
-                    calculateDepotDistance();
+                    await calculateDepotDistance();
                 }
             });
         });
