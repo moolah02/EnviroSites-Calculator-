@@ -12,7 +12,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
@@ -280,22 +280,22 @@
                 margin: 10px;
                 padding: 15px;
             }
-            
+
             .tabs {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }
-            
+
             .tab {
                 padding: 10px 8px;
                 font-size: 0.85em;
             }
-            
+
             .controls {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
-            
+
             .header h1 {
                 font-size: 2em;
             }
@@ -374,7 +374,7 @@
                 { name: "LUSAKA", lat: -17.900333333333332, lng: 30.988083333333336 },
                 { name: "MAVAMBO", lat: -17.897027777777776, lng: 31.238583333333334 },
                 { name: "GLEN VIEW", lat: -17.906, lng: 30.949055555555557 },
-                { name: "OK MABVUKU", lat: -17.837722222222222, lng: 31.19825 },
+
                 { name: "OK BUDIRIRO", lat: -17.882527777777778, lng: 30.933333333333334 },
                 { name: "ZIMRE PARK", lat: -17.87388888888889, lng: 31.2185 },
                 { name: "CURRENT", lat: -17.882055555555556, lng: 30.919611111111113 },
@@ -422,8 +422,7 @@
                 { name: "MBARE STODAD", lat: -17.867583333333332, lng: 31.03175 },
                 { name: "GRANARY PHASE 3", lat: -17.848888888888887, lng: 30.872194444444446 },
                 { name: "BELVEDERE-DIVARIS", lat: -17.830527777777778, lng: 31.008777777777777 },
-                { name: "CROWBOROUGH 2", lat: -17.87366666666667, lng: 31.213416666666667 },
-                { name: "CROWBOROUGH 3", lat: -17.84658333333333, lng: 30.93627777777778 },
+
                 { name: "GLENVIEW 1", lat: -17.913916666666665, lng: 30.94263888888889 },
                 { name: "DAMAFALLS", lat: -17.86577777777778, lng: 31.239916666666666 },
                 { name: "GLENNORAH MASHWEDE", lat: -17.91333333333333, lng: 30.974249999999998 },
@@ -504,7 +503,7 @@
         // Initialize map
         function initMap() {
             map = L.map('map').setView([-17.8, 31.0], 10);
-            
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
@@ -519,19 +518,19 @@
 
             searchInput.addEventListener('input', function() {
                 const query = this.value.toLowerCase().trim();
-                
+
                 if (query.length < 2) {
                     searchResults.style.display = 'none';
                     return;
                 }
 
                 const allLocations = locations[currentCity];
-                const filteredResults = allLocations.filter(location => 
+                const filteredResults = allLocations.filter(location =>
                     location.name.toLowerCase().includes(query)
                 );
 
                 if (filteredResults.length > 0) {
-                    searchResults.innerHTML = filteredResults.map(location => 
+                    searchResults.innerHTML = filteredResults.map(location =>
                         `<div class="search-result-item" data-lat="${location.lat}" data-lng="${location.lng}" data-name="${location.name}">
                             ${location.name}
                         </div>`
@@ -548,9 +547,9 @@
                     const lat = parseFloat(e.target.dataset.lat);
                     const lng = parseFloat(e.target.dataset.lng);
                     const name = e.target.dataset.name;
-                    
+
                     map.setView([lat, lng], 15);
-                    
+
                     // Highlight the marker temporarily
                     map.eachLayer(layer => {
                         if (layer instanceof L.Marker && layer !== depotMarker) {
@@ -580,12 +579,12 @@
             try {
                 const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson`);
                 const data = await response.json();
-                
+
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0];
                     const distance = route.distance / 1000; // Convert to kilometers
                     const geometry = route.geometry;
-                    
+
                     return {
                         distance: distance,
                         geometry: geometry
@@ -637,8 +636,8 @@
             cityLocations.forEach(location => {
                 const marker = L.marker([location.lat, location.lng])
                     .addTo(map)
-                    .bindTooltip(location.name, { 
-                        permanent: false, 
+                    .bindTooltip(location.name, {
+                        permanent: false,
                         direction: 'top',
                         className: 'custom-tooltip'
                     });
@@ -675,8 +674,8 @@
                 })
             }).addTo(map);
 
-            depotMarker.bindTooltip(depot.name, { 
-                permanent: true, 
+            depotMarker.bindTooltip(depot.name, {
+                permanent: true,
                 direction: 'top',
                 className: 'depot-tooltip'
             });
@@ -687,8 +686,8 @@
             cityLocations.forEach(location => {
                 const marker = L.marker([location.lat, location.lng])
                     .addTo(map)
-                    .bindTooltip(location.name, { 
-                        permanent: false, 
+                    .bindTooltip(location.name, {
+                        permanent: false,
                         direction: 'top'
                     });
 
@@ -722,10 +721,10 @@
                     // Draw route line if geometry is available
                     if (result.geometry) {
                         const routeCoords = result.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                        const line = L.polyline(routeCoords, { 
-                            color: '#4CAF50', 
-                            weight: 2, 
-                            opacity: 0.7 
+                        const line = L.polyline(routeCoords, {
+                            color: '#4CAF50',
+                            weight: 2,
+                            opacity: 0.7
                         }).addTo(map);
                         depotLines.push(line);
                     }
@@ -751,8 +750,8 @@
             let html = `
                 <h3><i class="fas fa-warehouse"></i> ${depotName} - Distance Summary</h3>
                 <div style="margin: 15px 0;">
-                    <strong>Total Sites:</strong> ${totalSites} | 
-                    <strong>Total Distance:</strong> ${totalDistance.toFixed(1)} km | 
+                    <strong>Total Sites:</strong> ${totalSites} |
+                    <strong>Total Distance:</strong> ${totalDistance.toFixed(1)} km |
                     <strong>Average Distance:</strong> ${avgDistance.toFixed(1)} km
                 </div>
                 <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
@@ -860,7 +859,7 @@
 
             try {
                 const result = await calculateRoadDistance(loc1.lat, loc1.lng, loc2.lat, loc2.lng);
-                
+
                 // Remove existing route line
                 if (routeLine) {
                     map.removeLayer(routeLine);
@@ -869,10 +868,10 @@
                 // Draw new route line if geometry is available
                 if (result.geometry) {
                     const routeCoords = result.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                    routeLine = L.polyline(routeCoords, { 
-                        color: '#4CAF50', 
-                        weight: 4, 
-                        opacity: 0.8 
+                    routeLine = L.polyline(routeCoords, {
+                        color: '#4CAF50',
+                        weight: 4,
+                        opacity: 0.8
                     }).addTo(map);
 
                     // Fit map to show the route
@@ -883,7 +882,7 @@
                 const resultEl = document.getElementById('result');
                 resultEl.innerHTML = `
                     <i class="fas fa-route"></i>
-                    Road distance from <strong>${loc1.name}</strong> to <strong>${loc2.name}</strong>: 
+                    Road distance from <strong>${loc1.name}</strong> to <strong>${loc2.name}</strong>:
                     <strong>${result.distance.toFixed(1)} km</strong>
                     ${result.geometry ? '' : ' (straight-line estimate)'}
                 `;
@@ -891,7 +890,7 @@
 
             } catch (error) {
                 console.error('Distance calculation failed:', error);
-                
+
                 const resultEl = document.getElementById('result');
                 resultEl.innerHTML = `
                     <i class="fas fa-exclamation-triangle"></i>
@@ -907,7 +906,7 @@
         // Update instruction text
         function updateInstruction() {
             const instructionEl = document.getElementById('instruction');
-            
+
             if (currentMode === 'sites') {
                 instructionEl.innerHTML = '<i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the road distance between them';
                 instructionEl.className = 'instruction';
@@ -927,7 +926,7 @@
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
-                    
+
                     const city = this.dataset.city;
                     const mode = this.dataset.mode;
                     loadData(city, mode);
@@ -960,7 +959,7 @@
         function handleDropdownChange() {
             const location1Select = document.getElementById('location1');
             const location2Select = document.getElementById('location2');
-            
+
             const index1 = parseInt(location1Select.value);
             const index2 = parseInt(location2Select.value);
 
@@ -970,7 +969,7 @@
             // Select new locations if both are valid and different
             if (!isNaN(index1) && !isNaN(index2) && index1 !== index2) {
                 const cityLocations = locations[currentCity];
-                
+
                 if (cityLocations[index1]) {
                     selectLocationByIndex(index1);
                 }
