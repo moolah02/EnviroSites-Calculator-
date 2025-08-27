@@ -51,6 +51,17 @@
             font-size: 1.2em;
         }
 
+        .site-count {
+            background: #e7f3e7;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
         .search-container {
             position: relative;
             margin-bottom: 20px;
@@ -110,7 +121,7 @@
 
         .tabs {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 2px;
             margin-bottom: 20px;
             background: #e9ecef;
@@ -125,7 +136,7 @@
             border-radius: 4px;
             transition: background-color 0.2s ease;
             font-weight: 600;
-            font-size: 0.95em;
+            font-size: 0.9em;
             background: white;
             color: #6c757d;
             border: 1px solid #dee2e6;
@@ -151,6 +162,17 @@
             background: #4CAF50;
             color: white;
             border-color: #4CAF50;
+        }
+
+        .tab.optimize {
+            background: white;
+            color: #6c757d;
+        }
+
+        .tab.optimize.active {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
         }
 
         .map-container {
@@ -181,6 +203,22 @@
             border: 1px solid #dee2e6;
         }
 
+        .optimize-controls {
+            display: none;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #fff3e0;
+            border-radius: 8px;
+            border: 1px solid #ffcc02;
+        }
+
+        .optimize-controls.show {
+            display: grid;
+        }
+
         .select-group {
             display: flex;
             flex-direction: column;
@@ -192,7 +230,7 @@
             color: #495057;
         }
 
-        select {
+        select, input[type="number"] {
             padding: 12px;
             border: 1px solid #ced4da;
             border-radius: 4px;
@@ -202,7 +240,7 @@
             transition: border-color 0.2s ease;
         }
 
-        select:focus {
+        select:focus, input[type="number"]:focus {
             outline: none;
             border-color: #4CAF50;
         }
@@ -226,6 +264,14 @@
         .calculate-btn:disabled {
             background: #6c757d;
             cursor: not-allowed;
+        }
+
+        .optimize-btn {
+            background: #ff6b35;
+        }
+
+        .optimize-btn:hover {
+            background: #e55a2b;
         }
 
         .depot-btn {
@@ -252,6 +298,73 @@
             display: block;
         }
 
+        .route-results {
+            display: none;
+            background: #fff3e0;
+            border: 2px solid #ff6b35;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .route-results.show {
+            display: block;
+        }
+
+        .route-results h3 {
+            color: #e55a2b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .biker-route {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .biker-route h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .route-path {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .route-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
         .instruction {
             background: #e9ecef;
             padding: 15px;
@@ -268,11 +381,47 @@
             color: #495057;
         }
 
+        .optimize-instruction {
+            background: #fff3e0;
+            color: #e65100;
+            border-color: #ffcc02;
+        }
+
         .loading {
             display: none;
             text-align: center;
             padding: 10px;
             color: #6c757d;
+        }
+
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .legend.show {
+            display: block;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            margin-right: 8px;
+            border-radius: 2px;
         }
 
         @media (max-width: 768px) {
@@ -288,10 +437,10 @@
 
             .tab {
                 padding: 10px 8px;
-                font-size: 0.85em;
+                font-size: 0.8em;
             }
 
-            .controls {
+            .controls, .optimize-controls {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
@@ -307,6 +456,10 @@
         <div class="header">
             <h1><i class="fas fa-map-marked-alt"></i> EnviroGas Sites Distance Calculator</h1>
             <p>Calculate distances between sites and from depots to all sites using road networks</p>
+        </div>
+
+        <div class="site-count" id="siteCount">
+            <i class="fas fa-info-circle"></i> Harare: 68 sites | Bulawayo: 40 sites
         </div>
 
         <div class="search-container">
@@ -332,10 +485,14 @@
             <div class="tab depot" data-mode="depot" data-city="bulawayo">
                 <i class="fas fa-warehouse"></i> Bulawayo Depot
             </div>
+            <div class="tab optimize" data-mode="optimize" data-city="harare">
+                <i class="fas fa-route"></i> Route Optimization
+            </div>
         </div>
 
         <div class="map-container">
             <div id="map"></div>
+            <div class="legend" id="legend"></div>
         </div>
 
         <div class="controls" id="controls">
@@ -356,8 +513,26 @@
             </button>
         </div>
 
+        <div class="optimize-controls" id="optimizeControls">
+            <div class="select-group">
+                <label for="numBikers"><i class="fas fa-users"></i> Number of Bikers Available:</label>
+                <input type="number" id="numBikers" min="1" max="20" value="3" placeholder="Enter number of bikers">
+            </div>
+            <button class="calculate-btn optimize-btn" id="optimizeBtn">
+                <i class="fas fa-route"></i> Optimize Routes
+            </button>
+        </div>
+
         <div class="loading" id="loading">
-            <i class="fas fa-spinner fa-spin"></i> Calculating road distance...
+            <i class="fas fa-spinner fa-spin"></i> Calculating optimized routes...
+        </div>
+
+        <div class="route-results" id="routeResults">
+            <h3><i class="fas fa-route"></i> Optimized Route Assignment</h3>
+            <div id="routeList"></div>
+            <button class="download-btn" id="downloadBtn">
+                <i class="fas fa-download"></i> Download Routes (CSV)
+            </button>
         </div>
 
         <div class="result" id="result"></div>
@@ -374,7 +549,6 @@
                 { name: "LUSAKA", lat: -17.900333333333332, lng: 30.988083333333336 },
                 { name: "MAVAMBO", lat: -17.897027777777776, lng: 31.238583333333334 },
                 { name: "GLEN VIEW", lat: -17.906, lng: 30.949055555555557 },
-
                 { name: "OK BUDIRIRO", lat: -17.882527777777778, lng: 30.933333333333334 },
                 { name: "ZIMRE PARK", lat: -17.87388888888889, lng: 31.2185 },
                 { name: "CURRENT", lat: -17.882055555555556, lng: 30.919611111111113 },
@@ -409,11 +583,9 @@
                 { name: "TYNWALD", lat: -17.792527777777778, lng: 30.95536111111111 },
                 { name: "WESTGATE", lat: -17.763083333333334, lng: 30.979444444444443 },
                 { name: "ASPINDALE", lat: -17.867722222222223, lng: 30.9525 },
-                
                 { name: "MARIMBA", lat: -17.830527777777778, lng: 31.008777777777777 },
                 { name: "MONTAGU", lat: -17.819416666666665, lng: 31.039472222222223 },
                 { name: "HOUGHTON PARK", lat: -17.881722222222223, lng: 31.016416666666668 },
-               
                 { name: "GRANARY PHASE4", lat: -17.842305555555555, lng: 30.889916666666664 },
                 { name: "REDAN MBARE", lat: -17.863750000000003, lng: 31.03827777777778 },
                 { name: "GRANARY PHASE 1", lat: -17.86013888888889, lng: 30.895805555555555 },
@@ -422,7 +594,6 @@
                 { name: "MBARE STODAD", lat: -17.867583333333332, lng: 31.03175 },
                 { name: "GRANARY PHASE 3", lat: -17.848888888888887, lng: 30.872194444444446 },
                 { name: "BELVEDERE-DIVARIS", lat: -17.8195548, lng: 31.0236251 },
-
                 { name: "GLENVIEW 1", lat: -17.913916666666665, lng: 30.94263888888889 },
                 { name: "DAMAFALLS", lat: -17.86577777777778, lng: 31.239916666666666 },
                 { name: "GLENNORAH MASHWEDE", lat: -17.91333333333333, lng: 30.974249999999998 },
@@ -492,6 +663,14 @@
             bulawayo: { name: "Bulawayo Depot", lat: -20.1753621, lng: 28.5573101 }
         };
 
+        // Route colors for different bikers
+        const routeColors = [
+            '#FF6B35', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', 
+            '#607D8B', '#795548', '#F44336', '#00BCD4', '#8BC34A',
+            '#FFC107', '#E91E63', '#3F51B5', '#009688', '#CDDC39',
+            '#FF5722', '#9E9E9E', '#673AB7', '#03A9F4', '#8BC34A'
+        ];
+
         let map;
         let currentCity = 'harare';
         let currentMode = 'sites';
@@ -499,6 +678,8 @@
         let routeLine = null;
         let depotMarker = null;
         let depotLines = [];
+        let optimizedRoutes = [];
+        let routeMarkers = [];
 
         // Initialize map
         function initMap() {
@@ -574,6 +755,151 @@
             });
         }
 
+        // K-means clustering for route optimization
+        function kMeansClustering(sites, k, depot) {
+            if (sites.length <= k) {
+                return sites.map((site, i) => [site]);
+            }
+
+            // Initialize centroids randomly
+            let centroids = [];
+            for (let i = 0; i < k; i++) {
+                const randomIndex = Math.floor(Math.random() * sites.length);
+                centroids.push({
+                    lat: sites[randomIndex].lat,
+                    lng: sites[randomIndex].lng
+                });
+            }
+
+            let clusters = [];
+            let maxIterations = 20;
+            let iteration = 0;
+
+            while (iteration < maxIterations) {
+                // Assign sites to closest centroid
+                clusters = Array(k).fill().map(() => []);
+
+                sites.forEach(site => {
+                    let minDistance = Infinity;
+                    let closestCluster = 0;
+
+                    centroids.forEach((centroid, i) => {
+                        const distance = calculateStraightDistance(
+                            site.lat, site.lng, centroid.lat, centroid.lng
+                        );
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestCluster = i;
+                        }
+                    });
+
+                    clusters[closestCluster].push(site);
+                });
+
+                // Update centroids
+                let hasChanged = false;
+                centroids.forEach((centroid, i) => {
+                    if (clusters[i].length > 0) {
+                        const newLat = clusters[i].reduce((sum, site) => sum + site.lat, 0) / clusters[i].length;
+                        const newLng = clusters[i].reduce((sum, site) => sum + site.lng, 0) / clusters[i].length;
+                        
+                        if (Math.abs(newLat - centroid.lat) > 0.001 || Math.abs(newLng - centroid.lng) > 0.001) {
+                            hasChanged = true;
+                        }
+                        
+                        centroid.lat = newLat;
+                        centroid.lng = newLng;
+                    }
+                });
+
+                if (!hasChanged) break;
+                iteration++;
+            }
+
+            // Remove empty clusters and balance
+            clusters = clusters.filter(cluster => cluster.length > 0);
+            
+            // Balance clusters if needed
+            return balanceClusters(clusters);
+        }
+
+        // Balance clusters to ensure reasonable distribution
+        function balanceClusters(clusters) {
+            const totalSites = clusters.reduce((sum, cluster) => sum + cluster.length, 0);
+            const averageSize = Math.ceil(totalSites / clusters.length);
+            const maxSize = averageSize + 2;
+
+            // Move sites from oversized clusters to undersized ones
+            for (let i = 0; i < clusters.length; i++) {
+                while (clusters[i].length > maxSize) {
+                    // Find smallest cluster
+                    let smallestIndex = 0;
+                    for (let j = 1; j < clusters.length; j++) {
+                        if (clusters[j].length < clusters[smallestIndex].length) {
+                            smallestIndex = j;
+                        }
+                    }
+                    
+                    if (clusters[smallestIndex].length < averageSize) {
+                        // Move one site from oversized to undersized cluster
+                        const site = clusters[i].pop();
+                        clusters[smallestIndex].push(site);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            return clusters;
+        }
+
+        // Optimize route within a cluster using nearest neighbor
+        function optimizeClusterRoute(cluster, depot) {
+            if (cluster.length === 0) return [];
+            if (cluster.length === 1) return [depot, cluster[0], depot];
+
+            let route = [depot];
+            let unvisited = [...cluster];
+            let current = depot;
+
+            while (unvisited.length > 0) {
+                let nearestIndex = 0;
+                let minDistance = Infinity;
+
+                unvisited.forEach((site, index) => {
+                    const distance = calculateStraightDistance(
+                        current.lat, current.lng, site.lat, site.lng
+                    );
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestIndex = index;
+                    }
+                });
+
+                const nearest = unvisited.splice(nearestIndex, 1)[0];
+                route.push(nearest);
+                current = nearest;
+            }
+
+            route.push(depot);
+            return route;
+        }
+
+        // Calculate total route distance
+        async function calculateRouteDistance(route) {
+            let totalDistance = 0;
+            
+            for (let i = 0; i < route.length - 1; i++) {
+                const result = await calculateRoadDistance(
+                    route[i].lat, route[i].lng,
+                    route[i + 1].lat, route[i + 1].lng
+                );
+                totalDistance += result.distance;
+            }
+            
+            return totalDistance;
+        }
+
         // Calculate road distance using OSRM
         async function calculateRoadDistance(lat1, lng1, lat2, lng2) {
             try {
@@ -612,6 +938,275 @@
             return R * c;
         }
 
+        // Optimize routes for all bikers
+        async function optimizeRoutes() {
+            const numBikers = parseInt(document.getElementById('numBikers').value);
+            if (numBikers < 1 || numBikers > 20) {
+                alert('Number of bikers must be between 1 and 20');
+                return;
+            }
+
+            const cityLocations = locations[currentCity];
+            const depot = depots[currentCity];
+            
+            const loadingEl = document.getElementById('loading');
+            loadingEl.style.display = 'block';
+
+            try {
+                // Cluster sites using k-means
+                const clusters = kMeansClustering(cityLocations, numBikers, depot);
+                
+                // Optimize route for each cluster
+                optimizedRoutes = [];
+                
+                for (let i = 0; i < clusters.length; i++) {
+                    const cluster = clusters[i];
+                    const route = optimizeClusterRoute(cluster, depot);
+                    const totalDistance = await calculateRouteDistance(route);
+                    
+                    optimizedRoutes.push({
+                        bikerId: i + 1,
+                        route: route,
+                        sites: cluster,
+                        totalDistance: totalDistance,
+                        color: routeColors[i % routeColors.length]
+                    });
+                }
+
+                await displayOptimizedRoutes();
+                
+            } catch (error) {
+                console.error('Route optimization failed:', error);
+                alert('Route optimization failed. Please try again.');
+            }
+
+            loadingEl.style.display = 'none';
+        }
+
+        // Display optimized routes on map and in list
+        async function displayOptimizedRoutes() {
+            // Clear existing routes
+            clearRouteDisplay();
+
+            const depot = depots[currentCity];
+            
+            // Add depot marker
+            depotMarker = L.marker([depot.lat, depot.lng], {
+                icon: L.divIcon({
+                    className: 'depot-marker',
+                    html: '<i class="fas fa-warehouse" style="color: #333; font-size: 20px; background: white; padding: 5px; border-radius: 50%; border: 2px solid #333;"></i>',
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 17]
+                })
+            }).addTo(map);
+
+            depotMarker.bindTooltip(depot.name + ' (START/END)', {
+                permanent: true,
+                direction: 'top',
+                className: 'depot-tooltip'
+            });
+
+            // Display each route
+            for (const routeData of optimizedRoutes) {
+                await displaySingleRoute(routeData);
+            }
+
+            // Fit map to show all routes
+            const allPoints = [];
+            allPoints.push([depot.lat, depot.lng]);
+            optimizedRoutes.forEach(routeData => {
+                routeData.sites.forEach(site => {
+                    allPoints.push([site.lat, site.lng]);
+                });
+            });
+            
+            if (allPoints.length > 0) {
+                map.fitBounds(allPoints, { padding: [20, 20] });
+            }
+
+            // Display route list
+            displayRouteList();
+            
+            // Show legend
+            displayLegend();
+        }
+
+        // Display a single route on the map
+        async function displaySingleRoute(routeData) {
+            const { route, color, bikerId } = routeData;
+
+            // Add site markers
+            routeData.sites.forEach((site, index) => {
+                const marker = L.marker([site.lat, site.lng], {
+                    icon: L.divIcon({
+                        className: 'biker-marker',
+                        html: `<div style="background: ${color}; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border: 2px solid white;">${bikerId}</div>`,
+                        iconSize: [25, 25],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(map);
+
+                marker.bindTooltip(`Biker ${bikerId}: ${site.name}`, {
+                    permanent: false,
+                    direction: 'top'
+                });
+
+                routeMarkers.push(marker);
+            });
+
+            // Draw route lines
+            for (let i = 0; i < route.length - 1; i++) {
+                try {
+                    const result = await calculateRoadDistance(
+                        route[i].lat, route[i].lng,
+                        route[i + 1].lat, route[i + 1].lng
+                    );
+
+                    if (result.geometry) {
+                        const routeCoords = result.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        const line = L.polyline(routeCoords, {
+                            color: color,
+                            weight: 4,
+                            opacity: 0.8
+                        }).addTo(map);
+                        depotLines.push(line);
+                    } else {
+                        // Fallback to straight line
+                        const line = L.polyline([
+                            [route[i].lat, route[i].lng],
+                            [route[i + 1].lat, route[i + 1].lng]
+                        ], {
+                            color: color,
+                            weight: 4,
+                            opacity: 0.8,
+                            dashArray: '10, 10'
+                        }).addTo(map);
+                        depotLines.push(line);
+                    }
+                } catch (error) {
+                    console.warn(`Failed to draw route segment for biker ${bikerId}:`, error);
+                }
+            }
+        }
+
+        // Display route list
+        function displayRouteList() {
+            const routeList = document.getElementById('routeList');
+            const routeResults = document.getElementById('routeResults');
+
+            let html = '';
+            let totalSites = 0;
+            let totalDistance = 0;
+
+            optimizedRoutes.forEach(routeData => {
+                const { bikerId, sites, route, totalDistance: distance, color } = routeData;
+                totalSites += sites.length;
+                totalDistance += distance;
+
+                // Create route path string
+                const routePath = route.map(location => location.name || 'DEPOT').join(' → ');
+
+                html += `
+                    <div class="biker-route" style="border-left-color: ${color}">
+                        <h4 style="color: ${color}">BIKER ${bikerId} (${sites.length} sites - ${distance.toFixed(1)}km total)</h4>
+                        <div class="route-path">${routePath}</div>
+                        <div class="route-stats">
+                            <span>Sites: ${sites.map(site => site.name).join(', ')}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Add summary
+            const avgDistance = totalDistance / optimizedRoutes.length;
+            html = `
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
+                    <strong>Summary:</strong> ${optimizedRoutes.length} bikers | ${totalSites} sites total | 
+                    ${totalDistance.toFixed(1)}km total distance | ${avgDistance.toFixed(1)}km average per biker
+                </div>
+            ` + html;
+
+            routeList.innerHTML = html;
+            routeResults.classList.add('show');
+        }
+
+        // Display legend
+        function displayLegend() {
+            const legend = document.getElementById('legend');
+            let html = '<div style="font-weight: bold; margin-bottom: 10px;">Route Legend</div>';
+            
+            optimizedRoutes.forEach(routeData => {
+                html += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${routeData.color}"></div>
+                        <span>Biker ${routeData.bikerId} (${routeData.sites.length} sites)</span>
+                    </div>
+                `;
+            });
+            
+            legend.innerHTML = html;
+            legend.classList.add('show');
+        }
+
+        // Download routes as CSV
+        function downloadRoutes() {
+            if (optimizedRoutes.length === 0) {
+                alert('No routes to download. Please optimize routes first.');
+                return;
+            }
+
+            let csvContent = 'Biker ID,Site Order,Site Name,Distance from Previous (km),Total Distance (km)\n';
+            
+            optimizedRoutes.forEach(routeData => {
+                const { bikerId, route, totalDistance } = routeData;
+                
+                route.forEach((location, index) => {
+                    const siteName = location.name || 'DEPOT';
+                    const siteOrder = index;
+                    let distanceFromPrevious = '';
+                    
+                    if (index > 0) {
+                        // Calculate distance from previous site (simplified)
+                        distanceFromPrevious = calculateStraightDistance(
+                            route[index - 1].lat, route[index - 1].lng,
+                            location.lat, location.lng
+                        ).toFixed(1);
+                    }
+                    
+                    csvContent += `${bikerId},${siteOrder},${siteName},${distanceFromPrevious},${totalDistance.toFixed(1)}\n`;
+                });
+                csvContent += '\n'; // Empty line between bikers
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `envirogas_routes_${currentCity}_${optimizedRoutes.length}bikers.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Clear route display
+        function clearRouteDisplay() {
+            // Remove route lines
+            depotLines.forEach(line => map.removeLayer(line));
+            depotLines = [];
+            
+            // Remove route markers
+            routeMarkers.forEach(marker => map.removeLayer(marker));
+            routeMarkers = [];
+            
+            // Remove depot marker
+            if (depotMarker) {
+                map.removeLayer(depotMarker);
+                depotMarker = null;
+            }
+            
+            // Hide legend
+            document.getElementById('legend').classList.remove('show');
+        }
+
         // Load data based on mode
         function loadData(city, mode) {
             clearMap();
@@ -620,8 +1215,10 @@
 
             if (mode === 'sites') {
                 loadSitesMode(city);
-            } else {
+            } else if (mode === 'depot') {
                 loadDepotMode(city);
+            } else if (mode === 'optimize') {
+                loadOptimizeMode(city);
             }
 
             updateInstruction();
@@ -701,6 +1298,48 @@
 
             // Calculate distances from depot to all sites
             calculateDepotDistances(depot, cityLocations);
+        }
+
+        // Load optimize mode
+        function loadOptimizeMode(city) {
+            const depot = depots[city];
+            const cityLocations = locations[city];
+            const bounds = [];
+
+            // Add depot marker
+            depotMarker = L.marker([depot.lat, depot.lng], {
+                icon: L.divIcon({
+                    className: 'depot-marker',
+                    html: '<i class="fas fa-warehouse" style="color: #ff6b35; font-size: 20px; background: white; padding: 5px; border-radius: 50%; border: 2px solid #ff6b35;"></i>',
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 17]
+                })
+            }).addTo(map);
+
+            depotMarker.bindTooltip(depot.name + ' (Optimization Center)', {
+                permanent: true,
+                direction: 'top',
+                className: 'depot-tooltip'
+            });
+
+            bounds.push([depot.lat, depot.lng]);
+
+            // Add markers for all sites
+            cityLocations.forEach(location => {
+                const marker = L.marker([location.lat, location.lng])
+                    .addTo(map)
+                    .bindTooltip(location.name, {
+                        permanent: false,
+                        direction: 'top'
+                    });
+
+                bounds.push([location.lat, location.lng]);
+            });
+
+            // Fit map to show all locations including depot
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
         }
 
         // Calculate distances from depot to all sites
@@ -804,7 +1443,11 @@
             routeLine = null;
             depotMarker = null;
             depotLines = [];
+            routeMarkers = [];
+            optimizedRoutes = [];
             document.getElementById('result').classList.remove('show');
+            document.getElementById('routeResults').classList.remove('show');
+            document.getElementById('legend').classList.remove('show');
         }
 
         // Populate dropdowns
@@ -910,9 +1553,12 @@
             if (currentMode === 'sites') {
                 instructionEl.innerHTML = '<i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the road distance between them';
                 instructionEl.className = 'instruction';
-            } else {
+            } else if (currentMode === 'depot') {
                 instructionEl.innerHTML = '<i class="fas fa-warehouse"></i> Viewing distances from depot to all sites in the selected city';
                 instructionEl.className = 'instruction depot-instruction';
+            } else if (currentMode === 'optimize') {
+                instructionEl.innerHTML = '<i class="fas fa-route"></i> Enter the number of bikers available and optimize collection routes from depot to all sites';
+                instructionEl.className = 'instruction optimize-instruction';
             }
         }
 
@@ -929,11 +1575,25 @@
 
                     const city = this.dataset.city;
                     const mode = this.dataset.mode;
+                    
+                    // Update current city for optimization mode
+                    if (mode === 'optimize') {
+                        currentCity = city;
+                    }
+                    
                     loadData(city, mode);
 
                     // Show/hide controls based on mode
                     const controls = document.getElementById('controls');
+                    const optimizeControls = document.getElementById('optimizeControls');
+                    
                     controls.style.display = mode === 'sites' ? 'grid' : 'none';
+                    
+                    if (mode === 'optimize') {
+                        optimizeControls.classList.add('show');
+                    } else {
+                        optimizeControls.classList.remove('show');
+                    }
                 });
             });
 
@@ -952,6 +1612,16 @@
             // Calculate button
             document.getElementById('calculateBtn').addEventListener('click', function() {
                 calculateDistance();
+            });
+
+            // Optimize button
+            document.getElementById('optimizeBtn').addEventListener('click', function() {
+                optimizeRoutes();
+            });
+
+            // Download button
+            document.getElementById('downloadBtn').addEventListener('click', function() {
+                downloadRoutes();
             });
         });
 
