@@ -203,6 +203,22 @@
             border: 1px solid #dee2e6;
         }
 
+        .depot-controls {
+            display: none;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #e7f3e7;
+            border-radius: 8px;
+            border: 1px solid #4CAF50;
+        }
+
+        .depot-controls.show {
+            display: grid;
+        }
+
         .optimize-controls {
             display: none;
             grid-template-columns: 1fr auto;
@@ -377,8 +393,9 @@
         }
 
         .depot-instruction {
-            background: #e9ecef;
-            color: #495057;
+            background: #e7f3e7;
+            color: #2e7d32;
+            border-color: #4CAF50;
         }
 
         .optimize-instruction {
@@ -440,7 +457,7 @@
                 font-size: 0.8em;
             }
 
-            .controls, .optimize-controls {
+            .controls, .depot-controls, .optimize-controls {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
@@ -510,6 +527,18 @@
             </div>
             <button class="calculate-btn" id="calculateBtn" disabled>
                 <i class="fas fa-calculator"></i> Calculate Road Distance
+            </button>
+        </div>
+
+        <div class="depot-controls" id="depotControls">
+            <div class="select-group">
+                <label for="depotSite"><i class="fas fa-map-pin"></i> Select Site:</label>
+                <select id="depotSite">
+                    <option value="">Choose a site to calculate distance from depot</option>
+                </select>
+            </div>
+            <button class="calculate-btn depot-btn" id="depotCalculateBtn" disabled>
+                <i class="fas fa-warehouse"></i> Calculate Distance from Depot
             </button>
         </div>
 
@@ -617,9 +646,7 @@
                 { name: "COWDRY PARK ANTHERNS", lat: -20.083027777777776, lng: 28.504277777777776 },
                 { name: "COWDRY PARK PKNPAY", lat: -20.087999999999997, lng: 28.519027777777776 },
                 { name: "SOUTHERN CROSS", lat: -20.187638888888888, lng: 28.635805555555557 },
-
-
-                 { name: "NKETA 9 ", lat: -20.2076066, lng: 28.5292196 },
+                { name: "NKETA 9 ", lat: -20.2076066, lng: 28.5292196 },
                 { name: "LUVEVE 5", lat: -20.102861111111114, lng: 28.516305555555554 },
                 { name: "MORNING SIDE", lat: -20.19725, lng: 28.579833333333333 },
                 { name: "HILLSIDE", lat: -20.194222222222223, lng: 28.5965 },
@@ -758,19 +785,22 @@
             });
         }
 
-        // K-means clustering for route optimization
+        // K-means clustering for route optimization (excluding Marondera sites)
         function kMeansClustering(sites, k, depot) {
-            if (sites.length <= k) {
-                return sites.map((site, i) => [site]);
+            // Filter out Marondera sites for route optimization
+            const filteredSites = sites.filter(site => !site.name.includes('MARONDERA'));
+            
+            if (filteredSites.length <= k) {
+                return filteredSites.map((site, i) => [site]);
             }
 
             // Initialize centroids randomly
             let centroids = [];
             for (let i = 0; i < k; i++) {
-                const randomIndex = Math.floor(Math.random() * sites.length);
+                const randomIndex = Math.floor(Math.random() * filteredSites.length);
                 centroids.push({
-                    lat: sites[randomIndex].lat,
-                    lng: sites[randomIndex].lng
+                    lat: filteredSites[randomIndex].lat,
+                    lng: filteredSites[randomIndex].lng
                 });
             }
 
@@ -782,7 +812,7 @@
                 // Assign sites to closest centroid
                 clusters = Array(k).fill().map(() => []);
 
-                sites.forEach(site => {
+                filteredSites.forEach(site => {
                     let minDistance = Infinity;
                     let closestCluster = 0;
 
@@ -956,7 +986,7 @@
             loadingEl.style.display = 'block';
 
             try {
-                // Cluster sites using k-means
+                // Cluster sites using k-means (excluding Marondera sites)
                 const clusters = kMeansClustering(cityLocations, numBikers, depot);
                 
                 // Optimize route for each cluster
@@ -1126,6 +1156,9 @@
                 <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
                     <strong>Summary:</strong> ${optimizedRoutes.length} bikers | ${totalSites} sites total | 
                     ${totalDistance.toFixed(1)}km total distance | ${avgDistance.toFixed(1)}km average per biker
+                    <br><small style="color: #666; margin-top: 5px; display: block;">
+                        Note: Marondera sites are excluded from route optimization
+                    </small>
                 </div>
             ` + html;
 
@@ -1188,6 +1221,65 @@
             a.download = `envirogas_routes_${currentCity}_${optimizedRoutes.length}bikers.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
+        }
+
+        // Calculate depot to site distance
+        async function calculateDepotToSiteDistance() {
+            const siteSelect = document.getElementById('depotSite');
+            const siteIndex = parseInt(siteSelect.value);
+            
+            if (isNaN(siteIndex)) return;
+
+            const depot = depots[currentCity];
+            const site = locations[currentCity][siteIndex];
+            
+            const loadingEl = document.getElementById('loading');
+            loadingEl.style.display = 'block';
+
+            try {
+                const result = await calculateRoadDistance(depot.lat, depot.lng, site.lat, site.lng);
+
+                // Remove existing route line
+                if (routeLine) {
+                    map.removeLayer(routeLine);
+                }
+
+                // Draw new route line if geometry is available
+                if (result.geometry) {
+                    const routeCoords = result.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    routeLine = L.polyline(routeCoords, {
+                        color: '#4CAF50',
+                        weight: 4,
+                        opacity: 0.8
+                    }).addTo(map);
+
+                    // Fit map to show the route
+                    map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
+                }
+
+                // Display result
+                const resultEl = document.getElementById('result');
+                resultEl.innerHTML = `
+                    <i class="fas fa-warehouse"></i>
+                    Distance from <strong>${depot.name}</strong> to <strong>${site.name}</strong>:
+                    <strong>${result.distance.toFixed(1)} km</strong>
+                    ${result.geometry ? '' : ' (straight-line estimate)'}
+                `;
+                resultEl.classList.add('show');
+
+            } catch (error) {
+                console.error('Distance calculation failed:', error);
+
+                const resultEl = document.getElementById('result');
+                resultEl.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Unable to calculate distance. Please try again.
+                `;
+                resultEl.style.background = '#dc3545';
+                resultEl.classList.add('show');
+            }
+
+            loadingEl.style.display = 'none';
         }
 
         // Clear route display
@@ -1268,7 +1360,7 @@
             depotMarker = L.marker([depot.lat, depot.lng], {
                 icon: L.divIcon({
                     className: 'depot-marker',
-                    html: '<i class="fas fa-warehouse" style="color: #ff6b35; font-size: 20px; background: white; padding: 5px; border-radius: 50%; border: 2px solid #ff6b35;"></i>',
+                    html: '<i class="fas fa-warehouse" style="color: #4CAF50; font-size: 20px; background: white; padding: 5px; border-radius: 50%; border: 2px solid #4CAF50;"></i>',
                     iconSize: [35, 35],
                     iconAnchor: [17, 17]
                 })
@@ -1299,8 +1391,8 @@
                 map.fitBounds(bounds, { padding: [20, 20] });
             }
 
-            // Calculate distances from depot to all sites
-            calculateDepotDistances(depot, cityLocations);
+            // Populate depot site dropdown
+            populateDepotDropdown(cityLocations);
         }
 
         // Load optimize mode
@@ -1327,14 +1419,22 @@
 
             bounds.push([depot.lat, depot.lng]);
 
-            // Add markers for all sites
+            // Add markers for all sites (excluding Marondera sites for visual clarity in optimization mode)
             cityLocations.forEach(location => {
-                const marker = L.marker([location.lat, location.lng])
-                    .addTo(map)
-                    .bindTooltip(location.name, {
-                        permanent: false,
-                        direction: 'top'
-                    });
+                const isMarondera = location.name.includes('MARONDERA');
+                const marker = L.marker([location.lat, location.lng], {
+                    icon: L.divIcon({
+                        className: 'site-marker',
+                        html: `<i class="fas fa-map-pin" style="color: ${isMarondera ? '#999' : '#4CAF50'}; font-size: 20px;"></i>`,
+                        iconSize: [25, 25],
+                        iconAnchor: [12, 25]
+                    })
+                }).addTo(map);
+
+                marker.bindTooltip(location.name + (isMarondera ? ' (Excluded from optimization)' : ''), {
+                    permanent: false,
+                    direction: 'top'
+                });
 
                 bounds.push([location.lat, location.lng]);
             });
@@ -1345,92 +1445,14 @@
             }
         }
 
-        // Calculate distances from depot to all sites
-        async function calculateDepotDistances(depot, sites) {
-            const results = [];
-            const loadingEl = document.getElementById('loading');
-            loadingEl.style.display = 'block';
+        // Populate depot dropdown
+        function populateDepotDropdown(cityLocations) {
+            const depotSiteSelect = document.getElementById('depotSite');
+            depotSiteSelect.innerHTML = '<option value="">Choose a site to calculate distance from depot</option>';
 
-            for (const site of sites) {
-                try {
-                    const result = await calculateRoadDistance(depot.lat, depot.lng, site.lat, site.lng);
-                    results.push({
-                        site: site.name,
-                        distance: result.distance,
-                        geometry: result.geometry
-                    });
-
-                    // Draw route line if geometry is available
-                    if (result.geometry) {
-                        const routeCoords = result.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                        const line = L.polyline(routeCoords, {
-                            color: '#4CAF50',
-                            weight: 2,
-                            opacity: 0.7
-                        }).addTo(map);
-                        depotLines.push(line);
-                    }
-                } catch (error) {
-                    console.warn(`Failed to calculate distance to ${site.name}:`, error);
-                }
-            }
-
-            loadingEl.style.display = 'none';
-
-            // Sort by distance and display results
-            results.sort((a, b) => a.distance - b.distance);
-            displayDepotResults(depot.name, results);
-        }
-
-        // Display depot calculation results
-        function displayDepotResults(depotName, results) {
-            const resultEl = document.getElementById('result');
-            const totalSites = results.length;
-            const totalDistance = results.reduce((sum, result) => sum + result.distance, 0);
-            const avgDistance = totalDistance / totalSites;
-
-            let html = `
-                <h3><i class="fas fa-warehouse"></i> ${depotName} - Distance Summary</h3>
-                <div style="margin: 15px 0;">
-                    <strong>Total Sites:</strong> ${totalSites} |
-                    <strong>Total Distance:</strong> ${totalDistance.toFixed(1)} km |
-                    <strong>Average Distance:</strong> ${avgDistance.toFixed(1)} km
-                </div>
-                <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
-            `;
-
-            results.forEach((result, index) => {
-                html += `
-                    <div style="padding: 8px; margin: 5px 0; background: rgba(255,255,255,0.2); border-radius: 4px; display: flex; justify-content: space-between;">
-                        <span>${index + 1}. ${result.site}</span>
-                        <span><strong>${result.distance.toFixed(1)} km</strong></span>
-                    </div>
-                `;
+            cityLocations.forEach((location, index) => {
+                depotSiteSelect.innerHTML += `<option value="${index}">${location.name}</option>`;
             });
-
-            html += '</div>';
-            resultEl.innerHTML = html;
-            resultEl.classList.add('show');
-        }
-
-        // Select location in sites mode
-        function selectLocation(location, marker) {
-            if (selectedMarkers.length < 2) {
-                selectedMarkers.push({ location, marker });
-                marker.setIcon(L.divIcon({
-                    className: 'selected-marker',
-                    html: '<i class="fas fa-map-pin" style="color: #ff6b35; font-size: 24px;"></i>',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 30]
-                }));
-
-                updateDropdowns();
-                updateCalculateButton();
-
-                if (selectedMarkers.length === 2) {
-                    calculateDistance();
-                }
-            }
         }
 
         // Clear map
@@ -1491,6 +1513,33 @@
         function updateCalculateButton() {
             const calculateBtn = document.getElementById('calculateBtn');
             calculateBtn.disabled = selectedMarkers.length < 2;
+        }
+
+        // Update depot calculate button state
+        function updateDepotCalculateButton() {
+            const depotCalculateBtn = document.getElementById('depotCalculateBtn');
+            const depotSiteSelect = document.getElementById('depotSite');
+            depotCalculateBtn.disabled = depotSiteSelect.value === '';
+        }
+
+        // Select location in sites mode
+        function selectLocation(location, marker) {
+            if (selectedMarkers.length < 2) {
+                selectedMarkers.push({ location, marker });
+                marker.setIcon(L.divIcon({
+                    className: 'selected-marker',
+                    html: '<i class="fas fa-map-pin" style="color: #ff6b35; font-size: 24px;"></i>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                }));
+
+                updateDropdowns();
+                updateCalculateButton();
+
+                if (selectedMarkers.length === 2) {
+                    calculateDistance();
+                }
+            }
         }
 
         // Calculate distance between selected locations
@@ -1557,10 +1606,10 @@
                 instructionEl.innerHTML = '<i class="fas fa-info-circle"></i> Select a city tab, choose two different sites, then calculate the road distance between them';
                 instructionEl.className = 'instruction';
             } else if (currentMode === 'depot') {
-                instructionEl.innerHTML = '<i class="fas fa-warehouse"></i> Viewing distances from depot to all sites in the selected city';
+                instructionEl.innerHTML = '<i class="fas fa-warehouse"></i> Select a site from the dropdown to calculate distance from the depot to that specific site';
                 instructionEl.className = 'instruction depot-instruction';
             } else if (currentMode === 'optimize') {
-                instructionEl.innerHTML = '<i class="fas fa-route"></i> Enter the number of bikers available and optimize collection routes from depot to all sites';
+                instructionEl.innerHTML = '<i class="fas fa-route"></i> Enter the number of bikers available and optimize collection routes from depot to all sites (excluding Marondera sites)';
                 instructionEl.className = 'instruction optimize-instruction';
             }
         }
@@ -1588,9 +1637,16 @@
 
                     // Show/hide controls based on mode
                     const controls = document.getElementById('controls');
+                    const depotControls = document.getElementById('depotControls');
                     const optimizeControls = document.getElementById('optimizeControls');
                     
                     controls.style.display = mode === 'sites' ? 'grid' : 'none';
+                    
+                    if (mode === 'depot') {
+                        depotControls.classList.add('show');
+                    } else {
+                        depotControls.classList.remove('show');
+                    }
                     
                     if (mode === 'optimize') {
                         optimizeControls.classList.add('show');
@@ -1603,6 +1659,7 @@
             // Dropdown changes
             const location1Select = document.getElementById('location1');
             const location2Select = document.getElementById('location2');
+            const depotSiteSelect = document.getElementById('depotSite');
 
             location1Select.addEventListener('change', function() {
                 handleDropdownChange();
@@ -1612,9 +1669,18 @@
                 handleDropdownChange();
             });
 
+            depotSiteSelect.addEventListener('change', function() {
+                updateDepotCalculateButton();
+            });
+
             // Calculate button
             document.getElementById('calculateBtn').addEventListener('click', function() {
                 calculateDistance();
+            });
+
+            // Depot calculate button
+            document.getElementById('depotCalculateBtn').addEventListener('click', function() {
+                calculateDepotToSiteDistance();
             });
 
             // Optimize button
