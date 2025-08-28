@@ -476,7 +476,7 @@
         </div>
 
         <div class="site-count" id="siteCount">
-            <i class="fas fa-info-circle"></i> Harare: 69 sites | Bulawayo: 41 sites
+            <i class="fas fa-info-circle"></i> Harare: 69 sites | Bulawayo: 40 sites
         </div>
 
         <div class="search-container">
@@ -793,8 +793,8 @@
             });
         }
 
-        // K-means clustering for route optimization (excluding Marondera sites only for Harare)
-        function kMeansClustering(sites, k, depot) {
+        // Improved clustering for better load balancing
+        async function improvedClustering(sites, k, depot) {
             // Filter out Marondera sites only for Harare
             const selectedCity = document.getElementById('optimizeCity').value;
             const filteredSites = selectedCity === 'harare' 
@@ -805,103 +805,46 @@
                 return filteredSites.map((site, i) => [site]);
             }
 
-            // Initialize centroids randomly
-            let centroids = [];
-            for (let i = 0; i < k; i++) {
-                const randomIndex = Math.floor(Math.random() * filteredSites.length);
-                centroids.push({
-                    lat: filteredSites[randomIndex].lat,
-                    lng: filteredSites[randomIndex].lng
-                });
-            }
+            // Calculate distance matrix from depot to all sites (using straight-line as approximation for speed)
+            const siteDistances = filteredSites.map(site => ({
+                site: site,
+                depotDistance: calculateStraightDistance(depot.lat, depot.lng, site.lat, site.lng)
+            }));
 
-            let clusters = [];
-            let maxIterations = 20;
-            let iteration = 0;
+            // Sort sites by distance from depot
+            siteDistances.sort((a, b) => a.depotDistance - b.depotDistance);
 
-            while (iteration < maxIterations) {
-                // Assign sites to closest centroid
-                clusters = Array(k).fill().map(() => []);
+            // Initialize clusters
+            let clusters = Array(k).fill().map(() => ({ sites: [], totalDistance: 0 }));
 
-                filteredSites.forEach(site => {
-                    let minDistance = Infinity;
-                    let closestCluster = 0;
+            // Distribute sites using a more balanced approach
+            siteDistances.forEach((siteData, index) => {
+                // Find the cluster with the least total estimated workload
+                let bestClusterIndex = 0;
+                let minWorkload = clusters[0].sites.length * 20 + clusters[0].totalDistance; // Weight by number of sites and distance
 
-                    centroids.forEach((centroid, i) => {
-                        const distance = calculateStraightDistance(
-                            site.lat, site.lng, centroid.lat, centroid.lng
-                        );
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestCluster = i;
-                        }
-                    });
-
-                    clusters[closestCluster].push(site);
-                });
-
-                // Update centroids
-                let hasChanged = false;
-                centroids.forEach((centroid, i) => {
-                    if (clusters[i].length > 0) {
-                        const newLat = clusters[i].reduce((sum, site) => sum + site.lat, 0) / clusters[i].length;
-                        const newLng = clusters[i].reduce((sum, site) => sum + site.lng, 0) / clusters[i].length;
-                        
-                        if (Math.abs(newLat - centroid.lat) > 0.001 || Math.abs(newLng - centroid.lng) > 0.001) {
-                            hasChanged = true;
-                        }
-                        
-                        centroid.lat = newLat;
-                        centroid.lng = newLng;
-                    }
-                });
-
-                if (!hasChanged) break;
-                iteration++;
-            }
-
-            // Remove empty clusters and balance
-            clusters = clusters.filter(cluster => cluster.length > 0);
-            
-            // Balance clusters if needed
-            return balanceClusters(clusters);
-        }
-
-        // Balance clusters to ensure reasonable distribution
-        function balanceClusters(clusters) {
-            const totalSites = clusters.reduce((sum, cluster) => sum + cluster.length, 0);
-            const averageSize = Math.ceil(totalSites / clusters.length);
-            const maxSize = averageSize + 2;
-
-            // Move sites from oversized clusters to undersized ones
-            for (let i = 0; i < clusters.length; i++) {
-                while (clusters[i].length > maxSize) {
-                    // Find smallest cluster
-                    let smallestIndex = 0;
-                    for (let j = 1; j < clusters.length; j++) {
-                        if (clusters[j].length < clusters[smallestIndex].length) {
-                            smallestIndex = j;
-                        }
-                    }
-                    
-                    if (clusters[smallestIndex].length < averageSize) {
-                        // Move one site from oversized to undersized cluster
-                        const site = clusters[i].pop();
-                        clusters[smallestIndex].push(site);
-                    } else {
-                        break;
+                for (let i = 1; i < clusters.length; i++) {
+                    const workload = clusters[i].sites.length * 20 + clusters[i].totalDistance;
+                    if (workload < minWorkload) {
+                        minWorkload = workload;
+                        bestClusterIndex = i;
                     }
                 }
-            }
 
-            return clusters;
+                clusters[bestClusterIndex].sites.push(siteData.site);
+                clusters[bestClusterIndex].totalDistance += siteData.depotDistance;
+            });
+
+            // Return just the sites arrays
+            return clusters.map(cluster => cluster.sites);
         }
 
-        // Optimize route within a cluster using nearest neighbor
-        function optimizeClusterRoute(cluster, depot) {
+        // Improved route optimization with 2-opt local search
+        function optimizeClusterRouteImproved(cluster, depot) {
             if (cluster.length === 0) return [];
             if (cluster.length === 1) return [depot, cluster[0], depot];
 
+            // Start with nearest neighbor
             let route = [depot];
             let unvisited = [...cluster];
             let current = depot;
@@ -926,7 +869,58 @@
             }
 
             route.push(depot);
+
+            // Apply 2-opt improvement
+            route = improve2Opt(route);
+
             return route;
+        }
+
+        // 2-opt local search improvement
+        function improve2Opt(route) {
+            if (route.length < 4) return route;
+
+            let improved = true;
+            let bestRoute = [...route];
+
+            while (improved) {
+                improved = false;
+                
+                for (let i = 1; i < route.length - 2; i++) {
+                    for (let j = i + 1; j < route.length - 1; j++) {
+                        // Try swapping edges
+                        const newRoute = [...route];
+                        
+                        // Reverse the segment between i and j
+                        const segment = newRoute.slice(i, j + 1).reverse();
+                        newRoute.splice(i, j - i + 1, ...segment);
+
+                        // Check if this is better
+                        const currentDistance = calculateRouteDistance2Opt(route);
+                        const newDistance = calculateRouteDistance2Opt(newRoute);
+
+                        if (newDistance < currentDistance) {
+                            route = newRoute;
+                            bestRoute = [...newRoute];
+                            improved = true;
+                        }
+                    }
+                }
+            }
+
+            return bestRoute;
+        }
+
+        // Fast distance calculation for 2-opt (using straight-line distance)
+        function calculateRouteDistance2Opt(route) {
+            let totalDistance = 0;
+            for (let i = 0; i < route.length - 1; i++) {
+                totalDistance += calculateStraightDistance(
+                    route[i].lat, route[i].lng,
+                    route[i + 1].lat, route[i + 1].lng
+                );
+            }
+            return totalDistance;
         }
 
         // Calculate total route distance
@@ -1004,15 +998,15 @@
             loadingEl.style.display = 'block';
 
             try {
-                // Cluster sites using k-means (excluding Marondera sites for Harare only)
-                const clusters = kMeansClustering(cityLocations, numBikers, depot);
+                // Use improved clustering for better load balancing
+                const clusters = await improvedClustering(cityLocations, numBikers, depot);
                 
-                // Optimize route for each cluster
+                // Optimize route for each cluster using improved algorithm
                 optimizedRoutes = [];
                 
                 for (let i = 0; i < clusters.length; i++) {
                     const cluster = clusters[i];
-                    const route = optimizeClusterRoute(cluster, depot);
+                    const route = optimizeClusterRouteImproved(cluster, depot);
                     const totalDistance = await calculateRouteDistance(route);
                     
                     optimizedRoutes.push({
@@ -1023,6 +1017,14 @@
                         color: routeColors[i % routeColors.length]
                     });
                 }
+
+                // Sort routes by total distance to check balance
+                optimizedRoutes.sort((a, b) => a.totalDistance - b.totalDistance);
+                
+                // Reassign biker IDs after sorting
+                optimizedRoutes.forEach((route, index) => {
+                    route.bikerId = index + 1;
+                });
 
                 // Update current city and load the selected city data for visualization
                 currentCity = selectedCity;
@@ -1170,15 +1172,35 @@
                 `;
             });
 
-            // Add summary
+            // Calculate balance statistics
+            const distances = optimizedRoutes.map(r => r.totalDistance);
             const avgDistance = totalDistance / optimizedRoutes.length;
+            const minDistance = Math.min(...distances);
+            const maxDistance = Math.max(...distances);
+            const balanceRatio = (maxDistance / minDistance).toFixed(2);
+            const siteCounts = optimizedRoutes.map(r => r.sites.length);
+            const avgSites = totalSites / optimizedRoutes.length;
+
+            // Add summary with balance information
             html = `
-                <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center;">
-                    <strong>Summary:</strong> ${optimizedRoutes.length} bikers | ${totalSites} sites total | 
-                    ${totalDistance.toFixed(1)}km total distance | ${avgDistance.toFixed(1)}km average per biker
-                    <br><small style="color: #666; margin-top: 5px; display: block;">
-                        Note: Marondera sites are excluded from route optimization
-                    </small>
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <strong>Optimization Summary:</strong> ${optimizedRoutes.length} bikers | ${totalSites} sites total | ${totalDistance.toFixed(1)}km total distance
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9em;">
+                        <div>
+                            <strong>Distance Distribution:</strong><br>
+                            • Average: ${avgDistance.toFixed(1)}km<br>
+                            • Range: ${minDistance.toFixed(1)}km - ${maxDistance.toFixed(1)}km<br>
+                            • Balance Ratio: ${balanceRatio}:1 ${balanceRatio < 1.5 ? '✓ Well Balanced' : balanceRatio < 2.0 ? '⚠ Fair Balance' : '⚠ Unbalanced'}
+                        </div>
+                        <div>
+                            <strong>Site Distribution:</strong><br>
+                            • Average: ${avgSites.toFixed(1)} sites<br>
+                            • Range: ${Math.min(...siteCounts)} - ${Math.max(...siteCounts)} sites<br>
+                            • ${currentCity === 'harare' ? 'Marondera sites excluded' : 'All sites included'}
+                        </div>
+                    </div>
                 </div>
             ` + html;
 
