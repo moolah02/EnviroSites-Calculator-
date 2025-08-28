@@ -543,11 +543,19 @@
         </div>
 
         <div class="optimize-controls" id="optimizeControls">
-            <div class="select-group">
+            <div class="select-group" id="citySelectionGroup">
+                <label for="optimizeCity"><i class="fas fa-city"></i> Select City for Route Optimization:</label>
+                <select id="optimizeCity">
+                    <option value="">Choose city to optimize routes for</option>
+                    <option value="harare">Harare (69 sites, excluding Marondera sites)</option>
+                    <option value="bulawayo">Bulawayo (40 sites)</option>
+                </select>
+            </div>
+            <div class="select-group" id="bikerSelectionGroup" style="display: none;">
                 <label for="numBikers"><i class="fas fa-users"></i> Number of Bikers Available:</label>
                 <input type="number" id="numBikers" min="1" max="20" value="3" placeholder="Enter number of bikers">
             </div>
-            <button class="calculate-btn optimize-btn" id="optimizeBtn">
+            <button class="calculate-btn optimize-btn" id="optimizeBtn" disabled>
                 <i class="fas fa-route"></i> Optimize Routes
             </button>
         </div>
@@ -730,7 +738,7 @@
             searchInput.addEventListener('input', function() {
                 const query = this.value.toLowerCase().trim();
 
-                if (query.length < 2) {
+                if (query.length < 2 || !currentCity || !locations[currentCity]) {
                     searchResults.style.display = 'none';
                     return;
                 }
@@ -785,10 +793,13 @@
             });
         }
 
-        // K-means clustering for route optimization (excluding Marondera sites)
+        // K-means clustering for route optimization (excluding Marondera sites only for Harare)
         function kMeansClustering(sites, k, depot) {
-            // Filter out Marondera sites for route optimization
-            const filteredSites = sites.filter(site => !site.name.includes('MARONDERA'));
+            // Filter out Marondera sites only for Harare
+            const selectedCity = document.getElementById('optimizeCity').value;
+            const filteredSites = selectedCity === 'harare' 
+                ? sites.filter(site => !site.name.includes('MARONDERA'))
+                : sites;
             
             if (filteredSites.length <= k) {
                 return filteredSites.map((site, i) => [site]);
@@ -973,20 +984,27 @@
 
         // Optimize routes for all bikers
         async function optimizeRoutes() {
+            const selectedCity = document.getElementById('optimizeCity').value;
             const numBikers = parseInt(document.getElementById('numBikers').value);
+            
+            if (!selectedCity) {
+                alert('Please select a city first');
+                return;
+            }
+            
             if (numBikers < 1 || numBikers > 20) {
                 alert('Number of bikers must be between 1 and 20');
                 return;
             }
 
-            const cityLocations = locations[currentCity];
-            const depot = depots[currentCity];
+            const cityLocations = locations[selectedCity];
+            const depot = depots[selectedCity];
             
             const loadingEl = document.getElementById('loading');
             loadingEl.style.display = 'block';
 
             try {
-                // Cluster sites using k-means (excluding Marondera sites)
+                // Cluster sites using k-means (excluding Marondera sites for Harare only)
                 const clusters = kMeansClustering(cityLocations, numBikers, depot);
                 
                 // Optimize route for each cluster
@@ -1006,6 +1024,8 @@
                     });
                 }
 
+                // Update current city and load the selected city data for visualization
+                currentCity = selectedCity;
                 await displayOptimizedRoutes();
                 
             } catch (error) {
@@ -1397,6 +1417,16 @@
 
         // Load optimize mode
         function loadOptimizeMode(city) {
+            // Clear the map first
+            clearMap();
+            
+            // Don't load any specific city data yet - wait for user selection
+            if (!city) {
+                // Just center on Zimbabwe
+                map.setView([-19, 29], 6);
+                return;
+            }
+            
             const depot = depots[city];
             const cityLocations = locations[city];
             const bounds = [];
@@ -1522,6 +1552,36 @@
             depotCalculateBtn.disabled = depotSiteSelect.value === '';
         }
 
+        // Update optimize button state
+        function updateOptimizeButton() {
+            const optimizeBtn = document.getElementById('optimizeBtn');
+            const optimizeCity = document.getElementById('optimizeCity');
+            const numBikers = document.getElementById('numBikers');
+            
+            const citySelected = optimizeCity.value !== '';
+            const bikersValid = parseInt(numBikers.value) >= 1 && parseInt(numBikers.value) <= 20;
+            
+            optimizeBtn.disabled = !citySelected || !bikersValid;
+        }
+
+        // Handle city selection for optimization
+        function handleOptimizeCitySelection() {
+            const optimizeCity = document.getElementById('optimizeCity');
+            const bikerSelectionGroup = document.getElementById('bikerSelectionGroup');
+            
+            if (optimizeCity.value) {
+                bikerSelectionGroup.style.display = 'flex';
+                // Load the selected city data on the map
+                loadOptimizeMode(optimizeCity.value);
+            } else {
+                bikerSelectionGroup.style.display = 'none';
+                // Clear the map and show general view
+                loadOptimizeMode('');
+            }
+            
+            updateOptimizeButton();
+        }
+
         // Select location in sites mode
         function selectLocation(location, marker) {
             if (selectedMarkers.length < 2) {
@@ -1609,7 +1669,7 @@
                 instructionEl.innerHTML = '<i class="fas fa-warehouse"></i> Select a site from the dropdown to calculate distance from the depot to that specific site';
                 instructionEl.className = 'instruction depot-instruction';
             } else if (currentMode === 'optimize') {
-                instructionEl.innerHTML = '<i class="fas fa-route"></i> Enter the number of bikers available and optimize collection routes from depot to all sites (excluding Marondera sites)';
+                instructionEl.innerHTML = '<i class="fas fa-route"></i> First select which city to optimize routes for, then enter the number of available bikers';
                 instructionEl.className = 'instruction optimize-instruction';
             }
         }
@@ -1628,12 +1688,21 @@
                     const city = this.dataset.city;
                     const mode = this.dataset.mode;
                     
-                    // Update current city for optimization mode
+                    // Handle optimization mode differently - don't set currentCity until user selects
                     if (mode === 'optimize') {
-                        currentCity = city;
+                        if (city) {
+                            currentCity = city;
+                            loadData(city, mode);
+                        } else {
+                            // Just switch to optimize mode without loading specific city data
+                            currentMode = mode;
+                            loadOptimizeMode('');
+                            updateInstruction();
+                        }
+                    } else {
+                        // For other modes, proceed normally
+                        loadData(city, mode);
                     }
-                    
-                    loadData(city, mode);
 
                     // Show/hide controls based on mode
                     const controls = document.getElementById('controls');
@@ -1671,6 +1740,18 @@
 
             depotSiteSelect.addEventListener('change', function() {
                 updateDepotCalculateButton();
+            });
+
+            // Optimize city selection
+            const optimizeCitySelect = document.getElementById('optimizeCity');
+            const numBikersInput = document.getElementById('numBikers');
+
+            optimizeCitySelect.addEventListener('change', function() {
+                handleOptimizeCitySelection();
+            });
+
+            numBikersInput.addEventListener('input', function() {
+                updateOptimizeButton();
             });
 
             // Calculate button
